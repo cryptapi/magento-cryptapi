@@ -1,0 +1,136 @@
+<?php
+/**
+ * Copyright © Magento, Inc. All rights reserved.
+ * See COPYING.txt for license details.
+ */
+
+
+
+$values = $block->getTemplateValues();
+if ($values) {
+    ?>
+<script  type='text/javascript'>
+    let ca_address = '<?= /* @noEscape */ $values['address_in'] ?>';
+    let ca_value = '<?= /* @noEscape */ $values['qr_value'] ?>';
+    let ca_coin = '<?= /* @noEscape */ $values['crypto_coin'] ?>';
+    let ajax_url = '<?= /* @noEscape */ $values['ajax_url'] ?>';
+</script>
+<script type='text/javascript'>
+require(['jquery'], function (jQuery,) {
+    function check_status(ajax_url) {
+        let is_paid = false;
+
+        function status_loop() {
+            if (is_paid) return;
+
+            jQuery.getJSON(ajax_url, function (data) {
+                if (data.is_pending) {
+                    jQuery('.payment_details,.payment_complete').hide(200);
+                    jQuery('.payment_pending,.ca_loader').show(200);
+                }
+
+                if (data.is_paid) {
+                    jQuery('.ca_loader,.payment_pending,.payment_details').hide(200);
+                    jQuery('.payment_complete,.ca_check').show(200);
+
+                    is_paid = true;
+                }
+            });
+
+            setTimeout(status_loop, 5000);
+        }
+
+        status_loop();
+    }
+
+    function fill(_addr, _value, _coin) {
+        let _protocols = {
+            btc: 'bitcoin:',
+            bch: 'bitcoincash:',
+            ltc: 'litecoin:',
+            eth: 'ethereum:',
+            xmr: 'monero:',
+            iota: 'iota:'
+        };
+
+        let _keys = {
+            btc: 'amount',
+            bch: 'amount',
+            ltc: 'amount',
+            eth: 'value',
+            xmr: 'tx_amount',
+            iota: 'amount'
+        };
+
+        let _address;
+
+        if (_addr.startsWith('bitcoincash:'))
+            _address = _addr;
+        else
+            _address = _protocols[_coin] + _addr;
+
+        let params = {};
+        params[_keys[_coin]] = _value;
+
+        _address += "?" + jQuery.param(params);
+
+        jQuery('#qrcodeCanvas').qrcode({'text': _address, 'width': 300, 'height': 300});
+    }
+    function maybe_fill()
+    {
+        if (jQuery('.payment-panel').length>1) {
+            jQuery('.payment-panel')[1].remove();
+            return;
+        }
+        check_status(ajax_url);
+        fill(ca_address,ca_value,ca_coin);
+    }
+    jQuery(function(){
+        setTimeout(maybe_fill(), Math.floor(Math.random()*500) );
+    });
+ });
+</script>
+<div class="payment-panel">
+    <div class="ca_loader" style="width: 100%; text-align: center; margin-bottom: 1rem;">
+        <div style="width: 100px; margin: 0 auto">
+            <div class="lds-css ng-scope">
+                <div style="width:100%;height:100%" class="lds-dual-ring">
+                    <div></div>
+                    <div>
+                        <div></div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+    <div class="ca_check" style="width: 100%; text-align: center; display: none;">
+        <img 
+            width="100" 
+            style="margin: 0 auto;" 
+            src="<?= /* @noEscape */ $block->getViewFileUrl("Cryptapi_Cryptapi/images/check.png") ?>"
+        />
+    </div>
+    <div class="payment_details" style="width: 100%; text-align: center">
+        <h4>Waiting for payment</h4>
+        <div style="width: 100%; text-align: center; margin: 2rem auto;">
+            <div id="qrcodeCanvas"></div>
+        </div>
+        <div style="width: 100%; margin: 2rem auto; text-align: center;">
+            In order to confirm your order, please send
+            <span style="font-weight: 500"><?= /* @noEscape */ $values['crypto_value'] ?></span>
+            <span style="font-weight: 500"><?= /* @noEscape */ $values['show_crypto_coin'] ?></span>
+            (<?= /* @noEscape */ $values['currency_symbol'] ?> <?= /* @noEscape */ $values['total'] ?>)
+            to
+            <span style="font-weight: 500"><?= /* @noEscape */ $values['address_in'] ?></span>
+        </div>
+    </div>
+    <div class="payment_pending" style="width: 100%; text-align: center; display: none;">
+        <h4>Your payment has been received, awaiting confirmation</h4>
+    </div>
+    <div class="payment_complete" style="width: 100%; text-align: center; display: none;">
+        <h4>Your payment has been confirmed!</h4>
+    </div>
+</div>
+    <?php
+}
+?>

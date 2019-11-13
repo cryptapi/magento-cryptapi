@@ -1,0 +1,21 @@
+<?php
+$values = $block->getResponseValues();
+?>
+<?php if ($values):?>
+    <div style="margin-top: 15px;">
+        <div class="admin__page-section-item-title">
+            <span class="title" style="font-size: 16px">
+                <?= /* @noEscape */ __('Cryptocurrency Payment Information') ?>
+            </span>
+        </div>
+        <div class="admin__page-section-item-content">
+        <?php foreach ($values as $key => $val) { ?>
+            <div class="admin__page-section-item-content" 
+                style="padding: 5px 0px; ">
+                <strong><?= /* @noEscape */ $key ?>:</strong>
+                <span class="price"><?= /* @noEscape */ $val ?></span>                        
+            </div>
+        <?php }?>
+        </div>
+    </div>
+<?php endif; ?>

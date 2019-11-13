@@ -1,0 +1,58 @@
+<?xml version="1.0"?>
+
+<config xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:noNamespaceSchemaLocation="urn:magento:module:Magento_Config:etc/system_file.xsd">
+    <system>
+        <section id="payment">
+            <group id="cryptapi" translate="label comment" type="text" sortOrder="310" showInDefault="1" showInWebsite="1" showInStore="1">
+                <label>Cryptapi</label>
+                <field id="active" translate="label" type="select" sortOrder="10" showInDefault="1" showInWebsite="1" showInStore="1">
+                    <label>Enabled</label>
+                    <source_model>Magento\Config\Model\Config\Source\Yesno</source_model>
+                </field>
+                <field id="title" translate="label" type="text" sortOrder="20" showInDefault="1" showInWebsite="1" showInStore="1">
+                    <label>Title</label>
+                </field>
+                <field id="cryptocurrencies" translate="label" type="multiselect" sortOrder="25" showInDefault="1" showInWebsite="1" showInStore="1">
+                    <label>Accepted cryptocurrencies</label>
+                    <source_model>Cryptapi\Cryptapi\Model\Config\Source\Cryptocurrencies</source_model>
+                    <comment>Select which coins do you wish to accept. CTRL + click to select multiple.</comment>
+                </field>
+                <field id="btc" translate="label" type="text" sortOrder="26" showInDefault="1" showInWebsite="1" showInStore="1">
+                    <label>Bitcoin Address</label>
+                    <comment>Insert your Bitcoin address here. Leave blank if you want to skip this cryptocurrency.</comment>
+                </field>
+                <field id="bch" translate="label" type="text" sortOrder="27" showInDefault="1" showInWebsite="1" showInStore="1">
+                    <label>Bitcoin Cash Address</label>
+                    <comment>Insert your Bitcoin Cash address here. Leave blank if you want to skip this cryptocurrency.</comment>
+                </field>
+                <field id="ltc" translate="label" type="text" sortOrder="28" showInDefault="1" showInWebsite="1" showInStore="1">
+                    <label>Litecoin Address</label>
+                    <comment>Insert your Litecoin address here. Leave blank if you want to skip this cryptocurrency.</comment>
+                </field>
+                <field id="eth" translate="label" type="text" sortOrder="29" showInDefault="1" showInWebsite="1" showInStore="1">
+                    <label>Ethereum Address</label>
+                    <comment>Insert your Ethereum address here. Leave blank if you want to skip this cryptocurrency.</comment>
+                </field>
+                <field id="xmr" translate="label" type="text" sortOrder="30" showInDefault="1" showInWebsite="1" showInStore="1">
+                    <label>Monero Address</label>
+                    <comment>Insert your Monero address here. Leave blank if you want to skip this cryptocurrency.</comment>
+                </field>
+                <field id="iota" translate="label" type="text" sortOrder="31" showInDefault="1" showInWebsite="1" showInStore="1">
+                    <label>IOTA Address</label>
+                    <comment>Insert your IOTA address here. Leave blank if you want to skip this cryptocurrency.</comment>
+                </field>
+                <field id="allowspecific" translate="label" type="allowspecific" sortOrder="120" showInDefault="1" showInWebsite="1" showInStore="1">
+                    <label>Countries</label>
+                    <source_model>Magento\Payment\Model\Config\Source\Allspecificcountries</source_model>
+                </field>
+                <field id="specificcountry" translate="label" type="multiselect" sortOrder="130" showInDefault="1" showInWebsite="1" showInStore="1">
+                    <label>Specific Countries</label>
+                    <source_model>Magento\Directory\Model\Config\Source\Country</source_model>
+                </field>
+                <field id="sort_order" translate="label" type="text" sortOrder="140" showInDefault="1" showInWebsite="1" showInStore="1">
+                    <label>Sort Order</label>
+                </field>
+            </group>
+        </section>
+    </system>
+</config>

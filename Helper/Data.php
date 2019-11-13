@@ -1,5 +1,4 @@
 <?php
-// @codingStandardsIgnoreFile
 namespace Cryptapi\Cryptapi\Helper;
 
 class Data extends \Magento\Framework\App\Helper\AbstractHelper
@@ -17,8 +16,10 @@ class Data extends \Magento\Framework\App\Helper\AbstractHelper
     {
         $connection= $this->resource->getConnection();
         $table = $this->resource->getTableName('cryptapi');
-        $query = "select response from {$table} where order_id = ".(int)($order_id);
-        return $connection->fetchOne($query);
+        $sql = $connection->select()
+                  ->from($table, ['response'])
+                  ->where('order_id = ?', (int)($order_id));
+        return $connection->fetchOne($sql);
     }
     
     public function addPaymentResponse($order_id, $response)
@@ -32,8 +33,8 @@ class Data extends \Magento\Framework\App\Helper\AbstractHelper
         } else {
             $connection = $this->resource->getConnection();
             $table = $this->resource->getTableName('cryptapi');
-            $query = "INSERT INTO {$table} (order_id, response) VALUES(".(int)($order_id).", '{$response}')";
-            $connection->query($query);
+            $data = ['order_id' => $order_id, 'response' => $response];
+            $connection->insert($table, $data);
         }
     }
     
@@ -47,8 +48,8 @@ class Data extends \Magento\Framework\App\Helper\AbstractHelper
             
             $connection = $this->resource->getConnection();
             $table = $this->resource->getTableName('cryptapi');
-            $query = "UPDATE {$table} SET response = '{$paymentData}' where order_id = ".(int)($order_id);
-            $connection->query($query);
+            $where = ['order_id = (?)' => (int)($order_id)];
+            $connection->update($table, ['response' => $paymentData], $where);
         }
     }
     
@@ -64,8 +65,8 @@ class Data extends \Magento\Framework\App\Helper\AbstractHelper
             
             $connection = $this->resource->getConnection();
             $table = $this->resource->getTableName('cryptapi');
-            $query = "UPDATE {$table} SET response = '{$paymentData}' where order_id = ".(int)($order_id);
-            $connection->query($query);
+            $where = ['order_id = (?)' => (int)($order_id)];
+            $connection->update($table, ['response' => $paymentData], $where);
         }
     }
 }

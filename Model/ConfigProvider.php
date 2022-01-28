@@ -1,76 +1,83 @@
 <?php
-/**
- * Copyright © Magento, Inc. All rights reserved.
- * See COPYING.txt for license details.
- */
+
 namespace Cryptapi\Cryptapi\Model;
 
 use Magento\Checkout\Model\ConfigProviderInterface;
 use Magento\Framework\Escaper;
 use Magento\Payment\Helper\Data as PaymentHelper;
+use Cryptapi\Cryptapi\lib\CryptAPIHelper;
 
 class ConfigProvider implements ConfigProviderInterface
 {
-    /**
-     * @var string[]
-     */
-    protected $methodCodes = [
-        'cryptapi'
-    ];
-
-    /**
-     * @var \Magento\Payment\Model\Method\AbstractMethod[]
-     */
-    protected $methods = [];
-
-    /**
-     * @var Escaper
-     */
-    protected $escaper;
+    const CODE = 'cryptapi';
 
     /**
      * @param PaymentHelper $paymentHelper
      * @param Escaper $escaper
      */
     public function __construct(
-        PaymentHelper $paymentHelper,
-        Escaper $escaper
-    ) {
+        \Magento\Framework\App\Config\ScopeConfigInterface $scopeConfig,
+        PaymentHelper                                      $paymentHelper,
+        Escaper                                            $escaper,
+        \Magento\Framework\App\CacheInterface              $cache,
+        \Magento\Framework\Serialize\SerializerInterface   $serializer
+    )
+    {
         $this->escaper = $escaper;
-        foreach ($this->methodCodes as $code) {
-            $this->methods[$code] = $paymentHelper->getMethodInstance($code);
-        }
+        $this->scopeConfig = $scopeConfig;
+        $this->paymentHelper = $paymentHelper;
+        $this->cache = $cache;
+        $this->serializer = $serializer;
     }
 
-    /**
-     * {@inheritdoc}
-     */
     public function getConfig()
     {
-        $config = [];
-        foreach ($this->methodCodes as $code) {
-            if ($this->methods[$code]->isAvailable()) {
-                $config['payment']['instructions'][$code] = $this->getInstructions($code);
-                
-                $config['payment'][$code]['btc'] = $this->methods[$code]->hasBtc();
-                $config['payment'][$code]['bch'] = $this->methods[$code]->hasBch();
-                $config['payment'][$code]['ltc'] = $this->methods[$code]->hasLtc();
-                $config['payment'][$code]['eth'] = $this->methods[$code]->hasEth();
-                $config['payment'][$code]['xmr'] = $this->methods[$code]->hasXmr();
-                $config['payment'][$code]['iota'] = $this->methods[$code]->hasIota();
-            }
-        }
+        $config = [
+            'payment' => array(
+                self::CODE => array(
+                    'cryptocurrencies' => $this->getCryptocurrencies(),
+                    'instructions' => $this->getInstructions(),
+                )
+            )
+        ];
         return $config;
     }
 
-    /**
-     * Get instructions text from config
-     *
-     * @param string $code
-     * @return string
-     */
-    protected function getInstructions($code)
+    public function getInstructions()
     {
-        return nl2br($this->escaper->escapeHtml($this->methods[$code]->getInstructions()));
+        return __('Pay with cryptocurrency');
+    }
+
+    public function getCryptocurrencies()
+    {
+        $cacheKey = \Cryptapi\Cryptapi\Model\Cache\Type::TYPE_IDENTIFIER;
+        $cacheTag = \Cryptapi\Cryptapi\Model\Cache\Type::CACHE_TAG;
+
+        if (empty($this->cache->load($cacheKey))) {
+            $this->cache->save(
+                $this->serializer->serialize(json_encode(CryptAPIHelper::get_supported_coins())),
+                $cacheKey,
+                [$cacheTag],
+                86400
+            );
+        }
+
+        $selected = json_decode($this->scopeConfig->getValue('payment/cryptapi/supported_cryptocurrencies/cryptocurrencies', \Magento\Store\Model\ScopeInterface::SCOPE_STORE), true);
+
+        $available_cryptos = $this->serializer->unserialize($this->cache->load($cacheKey));
+
+        $output = [];
+
+        foreach (json_decode($available_cryptos) as $ticker => $coin) {
+            foreach ($selected as $uid => $data) {
+                if ($ticker == $data['cryptocurrency'])
+                    $output[] = [
+                        'value' => $data['cryptocurrency'],
+                        'type' => $coin,
+                    ];
+            }
+        }
+
+        return $output;
     }
 }

@@ -11,7 +11,7 @@ class Data extends \Magento\Framework\App\Helper\AbstractHelper
         parent::__construct($context);
         $this->resource = $resource;
     }
-    
+
     public function getPaymentResponse($order_id)
     {
         $connection= $this->resource->getConnection();
@@ -21,7 +21,7 @@ class Data extends \Magento\Framework\App\Helper\AbstractHelper
                   ->where('order_id = ?', (int)($order_id));
         return $connection->fetchOne($sql);
     }
-    
+
     public function addPaymentResponse($order_id, $response)
     {
         $metaData = $this->getPaymentResponse($order_id);
@@ -37,7 +37,7 @@ class Data extends \Magento\Framework\App\Helper\AbstractHelper
             $connection->insert($table, $data);
         }
     }
-    
+
     public function updatePaymentData($order_id, $param, $value)
     {
         $metaData = $this->getPaymentResponse($order_id);
@@ -45,14 +45,14 @@ class Data extends \Magento\Framework\App\Helper\AbstractHelper
             $metaData = json_decode($metaData, true);
             $metaData[$param] = $value;
             $paymentData = json_encode($metaData);
-            
+
             $connection = $this->resource->getConnection();
             $table = $this->resource->getTableName('cryptapi');
             $where = ['order_id = (?)' => (int)($order_id)];
             $connection->update($table, ['response' => $paymentData], $where);
         }
     }
-    
+
     public function deletePaymentData($order_id, $param)
     {
         $metaData = $this->getPaymentResponse($order_id);
@@ -62,7 +62,7 @@ class Data extends \Magento\Framework\App\Helper\AbstractHelper
                 unset($metaData[$param]);
             }
             $paymentData = json_encode($metaData);
-            
+
             $connection = $this->resource->getConnection();
             $table = $this->resource->getTableName('cryptapi');
             $where = ['order_id = (?)' => (int)($order_id)];

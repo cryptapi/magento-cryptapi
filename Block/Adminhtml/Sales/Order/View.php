@@ -6,7 +6,7 @@ class View extends \Magento\Backend\Block\Template
     protected $helper;
     protected $request;
     protected $orderFactory;
-    
+
     public function __construct(
         \Cryptapi\Cryptapi\Helper\Data $helper,
         \Magento\Framework\App\RequestInterface $request,

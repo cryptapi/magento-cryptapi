@@ -2,7 +2,14 @@
     "name": "cryptapi/cryptapi",
     "description": "CryptAPI's Magento extension",
     "type": "magento2-module",
-    "version": "1.0.0",
+    "version": "2.0.0",
+    "require": {
+        "magento/module-payment": "100.1.*",
+        "magento/module-checkout": "100.1.*",
+        "magento/module-sales": "100.1.*",
+        "ext-curl": "*",
+        "ext-json": "*"
+    },
     "autoload": {
         "files": [ "registration.php" ],
         "psr-4": {

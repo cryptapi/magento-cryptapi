@@ -1,12 +1,17 @@
 <?xml version="1.0"?>
-<config xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:noNamespaceSchemaLocation="urn:magento:module:Magento_Store:etc/config.xsd">
+<config xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+        xsi:noNamespaceSchemaLocation="urn:magento:module:Magento_Store:etc/config.xsd">
 <default>
     <payment>
         <cryptapi>
             <model>Cryptapi\Cryptapi\Model\Pay</model>
             <title>Cryptocurrency</title>
-            <allowspecific>0</allowspecific>
             <active>0</active>
+            <show_branding>1</show_branding>
+            <disable_conversion>0</disable_conversion>
+            <qrcode_size>300</qrcode_size>
+            <qrcode_default>1</qrcode_default>
+            <allowspecific>0</allowspecific>
         </cryptapi>
     </payment>
 </default>

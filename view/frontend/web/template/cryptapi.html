@@ -1,102 +1,43 @@
-<!--
-/**
- * Copyright © Magento, Inc. All rights reserved.
- * See COPYING.txt for license details.
- */
--->
 <div class="payment-method" data-bind="css: {'_active': (getCode() == isChecked())}">
-    <div class="payment-method-title field choice">
-        <input type="radio"
-               name="payment[method]"
-               class="radio"
-               data-bind="attr: {'id': getCode()}, value: getCode(), checked: isChecked, click: selectPaymentMethod, visible: isRadioButtonVisible()"/>
-        <label data-bind="attr: {'for': getCode()}" class="label"><span data-bind="text: getTitle()"></span></label>
-    </div>
+    <input type="radio"
+           name="payment[method]"
+           class="radio"
+           data-bind="attr: {'id': getCode()}, value: getCode(), checked: isChecked, click: selectPaymentMethod, visible: isRadioButtonVisible()"/>
+    <label data-bind="attr: {'for': getCode()}" class="label">
+        <span data-bind="text: getTitle()"></span>
+    </label>
 
     <div class="payment-method-content">
         <p data-bind="html: getInstructions()"></p>
         <!-- ko foreach: getRegion('messages') -->
         <!-- ko template: getTemplate() --><!-- /ko -->
         <!--/ko-->
-        
         <div class="cryptapi-form-container">
-            <ul style="list-style: none outside;" class="additional-information">
-                <!-- ko if: (hasBtc())-->
-                <li>
-                    <span class="custom-radio">
-                        <input id="payment_method_btc" type="radio" name="cryptapi_coin" value="btc" />
-                    </span>
-                    <label for="payment_method_btc" style="display: inline-block;">
-                        <!-- ko i18n: 'Pay with Bitcoin'--><!-- /ko -->
-                    </label>
-                </li>
-                <!-- /ko -->
-                <!-- ko if: (hasBch())-->
-                <li>
-                    <span class="custom-radio">
-                        <input id="payment_method_bch" type="radio" name="cryptapi_coin" value="bch" />
-                    </span>
-                    <label for="payment_method_bch" style="display: inline-block;">
-                        <!-- ko i18n: 'Pay with Bitcoin Cash'--><!-- /ko -->
-                    </label>
-                </li>
-                <!-- /ko -->
-                <!-- ko if: (hasLtc())-->
-                <li>
-                    <span class="custom-radio">
-                        <input id="payment_method_ltc" type="radio" name="cryptapi_coin" value="ltc" />
-                    </span>
-                    <label for="payment_method_ltc" style="display: inline-block;">
-                        <!-- ko i18n: 'Pay with Litecoin'--><!-- /ko -->
-                    </label>
-                </li>
-                <!-- /ko -->
-                <!-- ko if: (hasEth())-->
-                <li>
-                    <span class="custom-radio">
-                        <input id="payment_method_eth" type="radio" name="cryptapi_coin" value="eth" />
-                    </span>
-                    <label for="payment_method_eth" style="display: inline-block;">
-                        <!-- ko i18n: 'Pay with Ethereum'--><!-- /ko -->
-                    </label>
-                </li>
-                <!-- /ko -->
-                <!-- ko if: (hasXmr())-->
-                <li>
-                    <span class="custom-radio">
-                        <input id="payment_method_xmr" type="radio" name="cryptapi_coin" value="xmr" />
-                    </span>
-                    <label for="payment_method_xmr" style="display: inline-block;">
-                        <!-- ko i18n: 'Pay with Monero'--><!-- /ko -->
-                    </label>
-                </li>
-                <!-- /ko -->
-                <!-- ko if: (hasIota())-->
-                <li>
-                    <span class="custom-radio">
-                        <input id="payment_method_iota" type="radio" name="cryptapi_coin" value="iota" />
-                    </span>
-                    <label for="payment_method_iota" style="display: inline-block;">
-                        <!-- ko i18n: 'Pay with IOTA'--><!-- /ko -->
-                    </label>
-                </li>
-                <!-- /ko -->
-
-            </ul>
+            <div class="cryptapi-form-container">
+                <select name="cryptapi_coin" class="select input-text required-entry"
+                        data-bind="
+                attr: {id: getCode()+'_payment_cryptocurrency_id'},
+                options: getCryptocurrencies(),
+                optionsValue: 'value',
+                optionsText: 'type',
+                optionsCaption: $t('Please Select A Cryptocurrency'),
+                ">
+                </select>
+            </div>
         </div>
-        
+
         <div class="payment-method-billing-address">
             <!-- ko foreach: $parent.getRegion(getBillingAddressFormName()) -->
             <!-- ko template: getTemplate() --><!-- /ko -->
             <!--/ko-->
         </div>
-        
+
         <div class="checkout-agreements-block">
             <!-- ko foreach: $parent.getRegion('before-place-order') -->
-                <!-- ko template: getTemplate() --><!-- /ko -->
+            <!-- ko template: getTemplate() --><!-- /ko -->
             <!--/ko-->
         </div>
-        <div class="actions-toolbar">
+        <div class="actions-toolbar" id="review-buttons-container">
             <div class="primary">
                 <button class="action primary checkout"
                         type="submit"
@@ -106,11 +47,10 @@
                         enable: (getCode() == isChecked()),
                         css: {disabled: !isPlaceOrderActionAllowed()}
                         "
-                        disabled>
+                        data-role="review-save">
                     <span data-bind="i18n: 'Place Order'"></span>
                 </button>
             </div>
         </div>
-
     </div>
 </div>

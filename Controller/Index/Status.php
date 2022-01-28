@@ -29,7 +29,7 @@ class Status extends \Magento\Framework\App\Action\Action
             if (!empty($metaData)) {
                 $metaData = json_decode($metaData, true);
             }
-            
+
             $cryptapi_pending = 0;
             if (isset($metaData['cryptapi_pending'])) {
                 $cryptapi_pending = $metaData['cryptapi_pending'];

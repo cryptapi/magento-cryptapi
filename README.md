@@ -6,7 +6,7 @@ Accept cryptocurrency payments on your Magento store
 ### Requirements:
 
 ```
-Magento >= 2
+Magento >= 2.3
 ```
 
 ### Description
@@ -64,6 +64,7 @@ For more info on our fees [click here](https://cryptapi.io/get_started/#fees)
 ```bash
 php bin/magento setup:upgrade
 php bin/magento setup:static-content:deploy
+php bin/magento cache:enable cryptapi_cryptocurrencies
 ```
 
 4. Enable and configure CryptApi in Magento Admin under Stores -> Configuration-> Sales -> Payment Methods -> CryptApi
@@ -110,5 +111,12 @@ The easiest and fastest way is via our live chat on our [website](https://crypta
 #### 1.0
 * Initial release.
 
+#### 2.0
+* New coins.
+* Updated codebase.
+* New API URL.
+* UI Improvements
+* Minor Bug Fixes
+
 ### Upgrade Notice
-* Initial release.
+* No breaking changes.

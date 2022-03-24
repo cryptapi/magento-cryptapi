@@ -2,7 +2,7 @@
     "name": "cryptapi/cryptapi",
     "description": "CryptAPI's Magento extension",
     "type": "magento2-module",
-    "version": "2.0.0",
+    "version": "3.0",
     "require": {
         "magento/module-payment": "100.1.*",
         "magento/module-checkout": "100.1.*",

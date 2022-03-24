@@ -1,12 +1,15 @@
 <?php
 
-namespace Cryptapi\Cryptapi\Model;
+namespace Cryptapi\Cryptapi\Model\Method;
+
 
 use Magento\Quote\Api\Data\PaymentInterface;
 use Magento\Framework\DataObject;
 use Cryptapi\Cryptapi\lib\CryptAPIHelper;
+use Magento\Payment\Model\Method\AbstractMethod;
+use Cryptapi\Cryptapi\Helper\Decimal;
 
-class Pay extends \Magento\Payment\Model\Method\AbstractMethod
+class CryptapiPayment extends AbstractMethod
 {
     /**
      * Payment method code
@@ -121,9 +124,7 @@ class Pay extends \Magento\Payment\Model\Method\AbstractMethod
         $selected = $paymentInfo->getAdditionalInformation('cryptapi_coin');
 
         if (empty($selected)) {
-            throw new \Magento\Framework\Exception\LocalizedException(
-                __('Please select a cryptocurrency.')
-            );
+            return $this;
         }
 
         $nonce = $this->generateNonce();
@@ -135,9 +136,9 @@ class Pay extends \Magento\Payment\Model\Method\AbstractMethod
         $total = $quote->getGrandTotal();
 
         $cryptoTotal = CryptAPIHelper::get_conversion(
+            $currencyCode,
             $selected,
             $total,
-            $currencyCode,
             $this->scopeConfig->getValue('payment/cryptapi/disable_conversion', \Magento\Store\Model\ScopeInterface::SCOPE_STORE)
         );
 
@@ -153,7 +154,14 @@ class Pay extends \Magento\Payment\Model\Method\AbstractMethod
             'cryptapi_nonce' => $nonce,
             'cryptapi_address' => '',
             'cryptapi_total' => $cryptoTotal,
+            'cryptapi_total_fiat' => $total,
             'cryptapi_currency' => $selected,
+            'cryptapi_history' => json_encode([]),
+            'cryptapi_cancelled' => '0',
+            'cryptapi_last_price_update' => time(),
+            'cryptapi_min' => $minTx,
+            'cryptapi_qr_code_value' => '',
+            'cryptapi_qr_code' => '',
         ];
 
         $paymentData = json_encode($paymentData);
@@ -195,6 +203,37 @@ class Pay extends \Magento\Payment\Model\Method\AbstractMethod
         } else {
             return false;
         }
+    }
+
+    public static function calcOrder($history, $meta)
+    {
+        $already_paid = new Decimal(0);
+        $already_paid_fiat = new Decimal(0);
+        $remaining = new Decimal($meta['cryptapi_total']);
+        $remaining_pending = new Decimal($meta['cryptapi_total']);
+        $remaining_fiat = new Decimal($meta['cryptapi_total_fiat']);
+
+        if (count($history) > 0) {
+            foreach ($history as $uuid => $item) {
+                if ((int)$item['pending'] === 0) {
+                    $remaining = $remaining->sub($item['value_paid']);
+                }
+
+                $remaining_pending = $remaining_pending->sub($item['value_paid']);
+                $remaining_fiat = $remaining_fiat->sub($item['value_paid_fiat']);
+
+                $already_paid = $already_paid->sum($item['value_paid']);
+                $already_paid_fiat = $already_paid_fiat->sum($item['value_paid_fiat']);
+            }
+        }
+
+        return [
+            'already_paid' => $already_paid,
+            'already_paid_fiat' => $already_paid_fiat,
+            'remaining' => $remaining,
+            'remaining_pending' => $remaining_pending,
+            'remaining_fiat' => $remaining_fiat
+        ];
     }
 
     public function generateNonce($len = 32)

@@ -12,7 +12,7 @@ define(
         rendererList.push(
             {
                 type: 'cryptapi',
-                component: 'Cryptapi_Cryptapi/js/cryptapi'
+                component: 'Cryptapi_Cryptapi/js/view/checkout/payment/cryptapi'
             }
         );
         return Component.extend({});

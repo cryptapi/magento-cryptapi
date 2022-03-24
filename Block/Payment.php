@@ -3,18 +3,20 @@
 namespace Cryptapi\Cryptapi\Block;
 
 use Cryptapi\Cryptapi\lib\CryptAPIHelper;
+use Magento\Framework\View\Element\Template;
 
-class Success extends \Magento\Framework\View\Element\Template
+class Payment extends Template
 {
     protected $helper;
     protected $payment;
 
     public function __construct(
         \Cryptapi\Cryptapi\Helper\Data                     $helper,
-        \Cryptapi\Cryptapi\Model\Pay                       $payment,
+        \Cryptapi\Cryptapi\Model\Method\CryptapiPayment    $payment,
         \Magento\Framework\App\Config\ScopeConfigInterface $scopeConfig,
-        \Magento\Catalog\Block\Product\Context             $context,
-        \Psr\Log\LoggerInterface                           $logger,
+        \Magento\Framework\View\Element\Template\Context   $context,
+        \Magento\Sales\Api\OrderRepositoryInterface        $orderRepository,
+        \Magento\Framework\App\Request\Http                $request,
         array                                              $data = []
     )
     {
@@ -22,23 +24,33 @@ class Success extends \Magento\Framework\View\Element\Template
         $this->helper = $helper;
         $this->payment = $payment;
         $this->scopeConfig = $scopeConfig;
-        $this->logger = $logger;
+        $this->request = $request;
+        $this->orderRepository = $orderRepository;
     }
 
     public function getTemplateValues()
     {
-        $order = $this->payment->getOrder();
+        $order_id = (int)$this->request->getParam('order_id');
+        $nonce = (string)$this->request->getParam('nonce');
+        $order = $this->orderRepository->get($order_id);
 
         $total = $order->getGrandTotal();
         $currencySymbol = $order->getOrderCurrencyCode();
-
         $metaData = $this->helper->getPaymentResponse($order->getQuoteId());
 
         if (empty($metaData)) {
             return false;
         }
 
+        $qrCodeSize = $this->scopeConfig->getValue('payment/cryptapi/qrcode_size', \Magento\Store\Model\ScopeInterface::SCOPE_STORE);
+
+        $branding = $this->scopeConfig->getValue('payment/cryptapi/show_branding', \Magento\Store\Model\ScopeInterface::SCOPE_STORE);
+
         $metaData = json_decode($metaData, true);
+
+        if ($nonce != $metaData['cryptapi_nonce']) {
+            return false;
+        }
 
         $cryptoValue = $metaData['cryptapi_total'];
         $cryptoCoin = $metaData['cryptapi_currency'];
@@ -46,7 +58,6 @@ class Success extends \Magento\Framework\View\Element\Template
         if (isset($metaData['cryptapi_address']) && !empty($metaData['cryptapi_address'])) {
             $addressIn = $metaData['cryptapi_address'];
         } else {
-
             $selected = $cryptoCoin;
 
             $address = '';
@@ -69,37 +80,41 @@ class Success extends \Magento\Framework\View\Element\Template
             $api = new CryptAPIHelper($selected, $address, $callbackUrl, $params, true);
             $addressIn = $api->get_address();
 
+            $qrCode = $api->get_qrcode('', $qrCodeSize);
+            $qrCodeValue = $api->get_qrcode($cryptoValue, $qrCodeSize);
+
             $this->helper->updatePaymentData($order->getQuoteId(), 'cryptapi_address', $addressIn);
+            $this->helper->updatePaymentData($order->getQuoteId(), 'cryptapi_qr_code_value', $qrCodeValue['qr_code']);
+            $this->helper->updatePaymentData($order->getQuoteId(), 'cryptapi_qr_code', $qrCode['qr_code']);
         }
 
         $ajaxParams = [
-            'order_id' => $order->getId()
+            'order_id' => $order_id,
         ];
 
         $ajaxUrl = $this->payment->getAjaxStatusUrl($ajaxParams);
 
-        $qrCodeSize = $this->scopeConfig->getValue('payment/cryptapi/qrcode_size', \Magento\Store\Model\ScopeInterface::SCOPE_STORE);
+        $metaData = $this->helper->getPaymentResponse($order->getQuoteId());
+        $metaData = json_decode($metaData, true);
 
-        $branding = $this->scopeConfig->getValue('payment/cryptapi/show_branding', \Magento\Store\Model\ScopeInterface::SCOPE_STORE);
-
-        $qrCode = $api->get_qrcode('', $qrCodeSize);
-        $qrCodeValue = $api->get_qrcode($cryptoValue, $qrCodeSize);
-
-        $values = [
-            'crypto_value' => $cryptoValue,
+        return [
+            'crypto_value' => floatval($cryptoValue),
             'currency_symbol' => $currencySymbol,
             'total' => $total,
             'address_in' => $addressIn,
             'crypto_coin' => $cryptoCoin,
             'ajax_url' => $ajaxUrl,
             'qrcode_size' => $qrCodeSize,
-            'qrcode' => $qrCode['qr_code'],
-            'qrcode_value' => $qrCodeValue['qr_code'],
+            'qrcode' => $metaData['cryptapi_qr_code'],
+            'qrcode_value' => $metaData['cryptapi_qr_code_value'],
             'qrcode_default' => $this->scopeConfig->getValue('payment/cryptapi/qrcode_default', \Magento\Store\Model\ScopeInterface::SCOPE_STORE),
-            'payment_uri' => $qrCode['uri'],
-            'show_branding' => $branding
+            'show_branding' => $branding,
+            'qr_code_setting' => $this->scopeConfig->getValue('payment/cryptapi/qrcode_setting', \Magento\Store\Model\ScopeInterface::SCOPE_STORE),
+            'order_timestamp' => strtotime($order->getCreatedAt()),
+            'order_cancelation_timeout' => $this->scopeConfig->getValue('payment/cryptapi/order_cancelation_timeout', \Magento\Store\Model\ScopeInterface::SCOPE_STORE),
+            'refresh_value_interval' => $this->scopeConfig->getValue('payment/cryptapi/refresh_value_interval', \Magento\Store\Model\ScopeInterface::SCOPE_STORE),
+            'last_price_update' => $metaData['cryptapi_last_price_update'],
+            'min_tx' => $metaData['cryptapi_min'],
         ];
-
-        return $values;
     }
 }

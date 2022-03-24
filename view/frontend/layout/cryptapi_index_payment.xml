@@ -4,12 +4,8 @@
         <css src="Cryptapi_Cryptapi::css/cryptapi.css"/>
     </head>
     <body>
-        <referenceContainer name="order.success.additional.info">
-            <block class="Cryptapi\Cryptapi\Block\Success"
-                   name="cryptapi"
-                   template="Cryptapi_Cryptapi::success.phtml"
-                   after="-">
-            </block>
+        <referenceContainer name="content">
+            <block class="Cryptapi\Cryptapi\Block\Payment" name="cryptapi" template="Cryptapi_Cryptapi::payment.phtml"/>
         </referenceContainer>
     </body>
 </page>

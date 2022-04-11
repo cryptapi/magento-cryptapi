@@ -12,10 +12,10 @@ class CartQuote implements HttpGetActionInterface
     protected $quoteRepository;
 
     public function __construct(
-        \Magento\Checkout\Model\Session                  $checkoutSession,
-        \Magento\Framework\App\Request\Http              $request,
-        \Magento\Framework\App\Response\Http\Interceptor $response,
-        \Psr\Log\LoggerInterface                         $logger
+        \Magento\Checkout\Model\Session      $checkoutSession,
+        \Magento\Framework\App\Request\Http  $request,
+        \Magento\Framework\App\Response\Http $response,
+        \Psr\Log\LoggerInterface             $logger
     )
     {
         $this->checkoutSession = $checkoutSession;

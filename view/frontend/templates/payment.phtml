@@ -47,7 +47,7 @@ if ($values) {
                             is_paid = true;
                         }
 
-                        if (data.is_pending) {
+                        if (data.is_pending === 1) {
                             waiting_payment.addClass('done');
                             waiting_network.addClass('done');
                             jQuery('.ca_loader').remove();
@@ -81,7 +81,7 @@ if ($values) {
                             jQuery('.ca_qrcode.value').attr("src", "data:image/png;base64," + data.qr_code_value);
                         }
 
-                        if (data.show_min_fee === '1') {
+                        if (data.show_min_fee === 1) {
                             jQuery('.ca_notification_remaining').show();
                         } else {
                             jQuery('.ca_notification_remaining').hide();

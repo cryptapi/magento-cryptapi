@@ -54,11 +54,11 @@ class CryptapiCronjob
 
             $min_tx = floatval($metaData['cryptapi_min']);
 
-            $calc = $this->payment::calcOrder($history, $metaData);
+            $calc = $this->payment::calcOrder($history, $metaData['cryptapi_total'], $metaData['cryptapi_total_fiat']);
 
-            $remaining = $calc['remaining']->result();
-            $remaining_pending = $calc['remaining_pending']->result();
-            $remaining_fiat = $calc['remaining_fiat']->result();
+            $remaining = $calc['remaining'];
+            $remaining_pending = $calc['remaining_pending'];
+            $remaining_fiat = $calc['remaining_fiat'];
 
             if (!empty($metaData['cryptapi_address']) && $value_refresh !== 0 && $metaData['cryptapi_cancelled'] !== '1' && (int)$metaData['cryptapi_last_price_update'] + $value_refresh <= time() && $remaining_pending > 0) {
 
@@ -68,8 +68,8 @@ class CryptapiCronjob
                     $crypto_total = CryptAPIHelper::get_conversion($order->getOrderCurrencyCode(), $cryptapi_coin, $metaData['cryptapi_total_fiat'], $disable_conversion);
                     $this->helper->updatePaymentData($orderQuoteId, 'cryptapi_total', $crypto_total);
 
-                    $calc_cron = $this->payment::calcOrder($history, $metaData);
-                    $crypto_remaining_total = $calc_cron['remaining_pending']->result();
+                    $calc_cron = $this->payment::calcOrder($history, $metaData['cryptapi_total'], $metaData['cryptapi_total_fiat']);
+                    $crypto_remaining_total = $calc_cron['remaining_pending'];
 
                     if ($remaining_pending <= $min_tx && !$remaining_pending <= 0) {
                         $qr_code_data_value = CryptAPIHelper::get_static_qrcode($metaData['cryptapi_address'], $cryptapi_coin, $min_tx, $this->scopeConfig->getValue('payment/cryptapi/qrcode_size'));

@@ -7,7 +7,7 @@ use Magento\Quote\Api\Data\PaymentInterface;
 use Magento\Framework\DataObject;
 use Cryptapi\Cryptapi\lib\CryptAPIHelper;
 use Magento\Payment\Model\Method\AbstractMethod;
-use Cryptapi\Cryptapi\Helper\Decimal;
+
 
 class CryptapiPayment extends AbstractMethod
 {
@@ -205,34 +205,34 @@ class CryptapiPayment extends AbstractMethod
         }
     }
 
-    public static function calcOrder($history, $meta)
+    public static function calcOrder($history, $total, $total_fiat)
     {
-        $already_paid = new Decimal(0);
-        $already_paid_fiat = new Decimal(0);
-        $remaining = new Decimal($meta['cryptapi_total']);
-        $remaining_pending = new Decimal($meta['cryptapi_total']);
-        $remaining_fiat = new Decimal($meta['cryptapi_total_fiat']);
+        $already_paid = 0;
+        $already_paid_fiat = 0;
+        $remaining = $total;
+        $remaining_pending = $total;
+        $remaining_fiat = $total_fiat;
 
-        if (count($history) > 0) {
+        if (!empty($history)) {
             foreach ($history as $uuid => $item) {
                 if ((int)$item['pending'] === 0) {
-                    $remaining = $remaining->sub($item['value_paid']);
+                    $remaining = bcsub($remaining, $item['value_paid'], 18);
                 }
 
-                $remaining_pending = $remaining_pending->sub($item['value_paid']);
-                $remaining_fiat = $remaining_fiat->sub($item['value_paid_fiat']);
+                $remaining_pending = bcsub($remaining_pending, $item['value_paid'], 18);
+                $remaining_fiat = bcsub($remaining_fiat, $item['value_paid_fiat'], 18);
 
-                $already_paid = $already_paid->sum($item['value_paid']);
-                $already_paid_fiat = $already_paid_fiat->sum($item['value_paid_fiat']);
+                $already_paid = bcadd($already_paid, $item['value_paid'], 18);
+                $already_paid_fiat = bcadd($already_paid_fiat, $item['value_paid_fiat'], 18);
             }
         }
 
         return [
-            'already_paid' => $already_paid,
-            'already_paid_fiat' => $already_paid_fiat,
-            'remaining' => $remaining,
-            'remaining_pending' => $remaining_pending,
-            'remaining_fiat' => $remaining_fiat
+            'already_paid' => floatval($already_paid),
+            'already_paid_fiat' => floatval($already_paid_fiat),
+            'remaining' => floatval($remaining),
+            'remaining_pending' => floatval($remaining_pending),
+            'remaining_fiat' => floatval($remaining_fiat)
         ];
     }
 

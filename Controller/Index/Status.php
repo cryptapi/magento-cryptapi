@@ -18,7 +18,7 @@ class Status implements HttpGetActionInterface
         \Magento\Framework\App\Config\ScopeConfigInterface $scopeConfig,
         \Cryptapi\Cryptapi\Cron\CryptapiCronjob            $cronjob,
         \Magento\Framework\App\Request\Http                $request,
-        \Magento\Framework\App\Response\Http\Interceptor   $response,
+        \Magento\Framework\App\Response\Http               $response,
         \Magento\Framework\Pricing\Helper\Data             $priceHelper,
         \Psr\Log\LoggerInterface                           $logger
     )
@@ -49,20 +49,20 @@ class Status implements HttpGetActionInterface
 
         $history = json_decode($metaData['cryptapi_history'], true);
 
-        $calc = $this->payment::calcOrder($history, $metaData);
+        $calc = $this->payment::calcOrder($history, $metaData['cryptapi_total'], $metaData['cryptapi_total_fiat']);
 
-        $already_paid = $calc['already_paid']->result();
-        $already_paid_fiat = $calc['already_paid_fiat']->result() <= 0 ? 0 : $calc['already_paid_fiat']->result();
+        $already_paid = $calc['already_paid'];
+        $already_paid_fiat = $calc['already_paid_fiat'] <= 0 ? 0 : $calc['already_paid_fiat'];
 
         $min_tx = floatval($metaData['cryptapi_min']);
 
-        // $remaining = $calc['remaining'];
-        $remaining_pending = $calc['remaining_pending']->result();
-        $remaining_fiat = $calc['remaining_fiat']->result();
+        $remaining = $calc['remaining'];
+        $remaining_pending = $calc['remaining_pending'];
+        $remaining_fiat = $calc['remaining_fiat'];
 
         $cryptapi_pending = '0';
         if ($remaining_pending <= 0 && !$this->payment->hasBeenPaid($order)) {
-            $cryptapi_pending = '1';
+            $cryptapi_pending = 1;
         }
 
         $counter_calc = (int)$metaData['cryptapi_last_price_update'] + (int)$this->scopeConfig->getValue('payment/cryptapi/refresh_value_interval', \Magento\Store\Model\ScopeInterface::SCOPE_STORE) - time();
@@ -70,21 +70,21 @@ class Status implements HttpGetActionInterface
             $this->cronjob->execute();
         }
 
-        if ($remaining_pending <= $min_tx && $remaining_fiat > 0) {
+        if ($remaining_pending <= $min_tx && $remaining_pending > 0) {
             $remaining_pending = $min_tx;
             $showMinFee = '1';
         }
 
         $data = [
             'is_paid' => $this->payment->hasBeenPaid($order),
-            'is_pending' => (int)($cryptapi_pending),
+            'is_pending' => (int)$cryptapi_pending,
             'crypto_total' => floatval($metaData['cryptapi_total']),
             'qr_code_value' => $metaData['cryptapi_qr_code_value'],
             'cancelled' => $metaData['cryptapi_cancelled'],
-            'remaining' => $remaining_pending <= 0 ? 0 : $remaining_pending,
+            'remaining' => $remaining_pending < 0 ? 0 : $remaining_pending,
             'fiat_remaining' => $this->priceHelper->currency($remaining_fiat, true, false),
             'coin' => strtoupper($metaData['cryptapi_currency']),
-            'show_min_fee' => $showMinFee,
+            'show_min_fee' => (int)$showMinFee,
             'order_history' => $history,
             'already_paid' => $already_paid,
             'already_paid_fiat' => $this->priceHelper->currency(floatval($already_paid_fiat) <= 0 ? 0 : floatval($already_paid_fiat), true, false),

@@ -54,7 +54,7 @@ class CryptapiCronjob
 
             $min_tx = floatval($metaData['cryptapi_min']);
 
-            $calc = $this->payment::calcOrder($history, $metaData['cryptapi_total'], $metaData['cryptapi_total_fiat']);
+            $calc = $this->payment::calcOrder($history, $metaData);
 
             $remaining = $calc['remaining'];
             $remaining_pending = $calc['remaining_pending'];
@@ -68,7 +68,7 @@ class CryptapiCronjob
                     $crypto_total = CryptAPIHelper::get_conversion($order->getOrderCurrencyCode(), $cryptapi_coin, $metaData['cryptapi_total_fiat'], $disable_conversion);
                     $this->helper->updatePaymentData($orderQuoteId, 'cryptapi_total', $crypto_total);
 
-                    $calc_cron = $this->payment::calcOrder($history, $metaData['cryptapi_total'], $metaData['cryptapi_total_fiat']);
+                    $calc_cron = $this->payment::calcOrder($history, $metaData);
                     $crypto_remaining_total = $calc_cron['remaining_pending'];
 
                     if ($remaining_pending <= $min_tx && !$remaining_pending <= 0) {

@@ -6,7 +6,7 @@ Accept cryptocurrency payments on your Magento store
 ### Requirements:
 
 ```
-Magento >= 2.3
+Magento >= 2.4
 ```
 
 ### Description
@@ -133,6 +133,12 @@ The easiest and fastest way is via our live chat on our [website](https://crypta
 * Disable QR Code with value in certain currencies due to some wallets not supporting it
 * Minor fixes
 * UI Improvements
+
+#### 3.0.1
+* Minor fixes
+
+#### 3.0.2
+* Minor fixes
 
 ### Upgrade Notice
 * No breaking changes.

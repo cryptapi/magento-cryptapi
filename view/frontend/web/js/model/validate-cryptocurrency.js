@@ -1,5 +1,8 @@
 define(
-    ['mage/translate', 'Magento_Ui/js/model/messageList'],
+    [
+        'mage/translate',
+        'Magento_Ui/js/model/messageList'
+    ],
     function ($t, messageList) {
         'use strict';
         return {
@@ -7,6 +10,10 @@ define(
                 var isValid = false;
 
                 if (document.getElementById("cryptapi_payment_cryptocurrency_id").value) {
+                    isValid = true;
+                }
+
+                if(!document.getElementById("cryptapi").checked) {
                     isValid = true;
                 }
 

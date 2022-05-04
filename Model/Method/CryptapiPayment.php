@@ -2,12 +2,11 @@
 
 namespace Cryptapi\Cryptapi\Model\Method;
 
-
 use Magento\Quote\Api\Data\PaymentInterface;
 use Magento\Framework\DataObject;
 use Cryptapi\Cryptapi\lib\CryptAPIHelper;
 use Magento\Payment\Model\Method\AbstractMethod;
-
+use Cryptapi\Cryptapi\Helper\Decimal;
 
 class CryptapiPayment extends AbstractMethod
 {
@@ -205,25 +204,25 @@ class CryptapiPayment extends AbstractMethod
         }
     }
 
-    public static function calcOrder($history, $total, $total_fiat)
+    public static function calcOrder($history, $meta)
     {
         $already_paid = 0;
         $already_paid_fiat = 0;
-        $remaining = $total;
-        $remaining_pending = $total;
-        $remaining_fiat = $total_fiat;
+        $remaining = $meta['cryptapi_total'];
+        $remaining_pending = $meta['cryptapi_total'];
+        $remaining_fiat = $meta['cryptapi_total_fiat'];
 
         if (!empty($history)) {
             foreach ($history as $uuid => $item) {
                 if ((int)$item['pending'] === 0) {
-                    $remaining = bcsub($remaining, $item['value_paid'], 18);
+                    $remaining = bcsub(CryptAPIHelper::sig_fig($remaining, 6), $item['value_paid'], 8);
                 }
 
-                $remaining_pending = bcsub($remaining_pending, $item['value_paid'], 18);
-                $remaining_fiat = bcsub($remaining_fiat, $item['value_paid_fiat'], 18);
+                $remaining_pending = bcsub(CryptAPIHelper::sig_fig($remaining_pending, 6), $item['value_paid'], 8);
+                $remaining_fiat = bcsub(CryptAPIHelper::sig_fig($remaining_fiat, 6), $item['value_paid_fiat'], 8);
 
-                $already_paid = bcadd($already_paid, $item['value_paid'], 18);
-                $already_paid_fiat = bcadd($already_paid_fiat, $item['value_paid_fiat'], 18);
+                $already_paid = bcadd(CryptAPIHelper::sig_fig($already_paid, 6), $item['value_paid'], 8);
+                $already_paid_fiat = bcadd(CryptAPIHelper::sig_fig($already_paid_fiat, 6), $item['value_paid_fiat'], 8);
             }
         }
 

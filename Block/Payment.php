@@ -17,6 +17,7 @@ class Payment extends Template
         \Magento\Framework\View\Element\Template\Context   $context,
         \Magento\Sales\Api\OrderRepositoryInterface        $orderRepository,
         \Magento\Framework\App\Request\Http                $request,
+        \Magento\Framework\App\ProductMetadataInterface    $productMetadata,
         array                                              $data = []
     )
     {
@@ -26,13 +27,18 @@ class Payment extends Template
         $this->scopeConfig = $scopeConfig;
         $this->request = $request;
         $this->orderRepository = $orderRepository;
+        $this->productMetadata = $productMetadata;
     }
 
     public function getTemplateValues()
     {
-        $order_id = (int)$this->request->getParam('order_id');
-        $nonce = (string)$this->request->getParam('nonce');
-        $order = $this->orderRepository->get($order_id);
+        if ($this->productMetadata->getVersion() >= 2.3 && $this->productMetadata->getVersion() < 2.4) {
+            $order = $this->payment->getOrder();
+        } else {
+            $order_id = (int)$this->request->getParam('order_id');
+            $nonce = (string)$this->request->getParam('nonce');
+            $order = $this->orderRepository->get($order_id);
+        }
 
         $total = $order->getGrandTotal();
         $currencySymbol = $order->getOrderCurrencyCode();
@@ -48,8 +54,10 @@ class Payment extends Template
 
         $metaData = json_decode($metaData, true);
 
-        if ($nonce != $metaData['cryptapi_nonce']) {
-            return false;
+        if (!$this->productMetadata->getVersion() >= 2.3 && $this->productMetadata->getVersion() < 2.4) {
+            if ($nonce != $metaData['cryptapi_nonce']) {
+                return false;
+            }
         }
 
         $cryptoValue = $metaData['cryptapi_total'];
@@ -89,7 +97,7 @@ class Payment extends Template
         }
 
         $ajaxParams = [
-            'order_id' => $order_id,
+            'order_id' => $order->getId(),
         ];
 
         $ajaxUrl = $this->payment->getAjaxStatusUrl($ajaxParams);

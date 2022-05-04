@@ -37,20 +37,30 @@ class Callback implements HttpGetActionInterface
         $order = $this->orderRepository->get($data['order_id']);
         $orderId = $order->getQuoteId();
 
+        $currencySymbol = $order->getOrderCurrencyCode();
+
         $metaData = json_decode($this->helper->getPaymentResponse($orderId), true);
 
         if ($this->payment->hasBeenPaid($order) || $data['nonce'] != $metaData['cryptapi_nonce']) {
             return $this->response->setBody("*ok*");
         }
 
-        $paid = $data['value_coin'];
+        $paid = floatval($data['value_coin']);
 
         $min_tx = floatval($metaData['cryptapi_min']);
 
         $history = json_decode($metaData['cryptapi_history'], true);
 
-        if (empty($history[$data['uuid']])) {
-            $fiat_conversion = CryptAPIHelper::get_conversion($metaData['cryptapi_currency'], $order->getOrderCurrencyCode(), $paid, $this->scopeConfig->getValue('payment/cryptapi/disable_conversion', \Magento\Store\Model\ScopeInterface::SCOPE_STORE));
+        $update_history = true;
+
+        foreach ($history as $uuid => $item) {
+            if ($uuid === $data['uuid']) {
+                $update_history = false;
+            }
+        }
+
+        if ($update_history) {
+            $fiat_conversion = CryptAPIHelper::get_conversion($metaData['cryptapi_currency'], $currencySymbol, $paid, $this->scopeConfig->getValue('payment/cryptapi/disable_conversion', \Magento\Store\Model\ScopeInterface::SCOPE_STORE));
 
             $history[$data['uuid']] = [
                 'timestamp' => time(),
@@ -68,7 +78,7 @@ class Callback implements HttpGetActionInterface
 
         $history = json_decode($metaData['cryptapi_history'], true);
 
-        $calc = $this->payment::calcOrder($history, $metaData['cryptapi_total'], $metaData['cryptapi_total_fiat']);
+        $calc = $this->payment::calcOrder($history, $metaData);
 
         $remaining = $calc['remaining'];
         $remaining_pending = $calc['remaining_pending'];

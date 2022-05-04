@@ -14,14 +14,12 @@ class CartQuote implements HttpGetActionInterface
     public function __construct(
         \Magento\Checkout\Model\Session      $checkoutSession,
         \Magento\Framework\App\Request\Http  $request,
-        \Magento\Framework\App\Response\Http $response,
-        \Psr\Log\LoggerInterface             $logger
+        \Magento\Framework\App\Response\Http $response
     )
     {
         $this->checkoutSession = $checkoutSession;
         $this->request = $request;
         $this->response = $response;
-        $this->logger = $logger;
     }
 
     public function execute()

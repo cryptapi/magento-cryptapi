@@ -1,0 +1,15 @@
+<?xml version="1.0"?>
+<page xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" layout="1column" xsi:noNamespaceSchemaLocation="urn:magento:framework:View/Layout/etc/page_configuration.xsd">
+    <head>
+        <css src="Cryptapi_Cryptapi::css/cryptapi.css"/>
+    </head>
+    <body>
+        <referenceContainer name="order.success.additional.info">
+            <block class="Cryptapi\Cryptapi\Block\Payment"
+                   name="cryptapi"
+                   template="Cryptapi_Cryptapi::payment.phtml"
+                   after="-">
+            </block>
+        </referenceContainer>
+    </body>
+</page>

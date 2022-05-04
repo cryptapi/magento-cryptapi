@@ -13,7 +13,9 @@ class AfterSuccess implements ObserverInterface
         \Cryptapi\Cryptapi\Model\Method\CryptapiPayment $payment,
         \Magento\Framework\App\ResponseFactory          $responseFactory,
         \Magento\Framework\UrlInterface                 $url,
-        \Psr\Log\LoggerInterface $logger
+        \Psr\Log\LoggerInterface                        $logger,
+        \Magento\Framework\App\ProductMetadataInterface $productMetadata,
+        \Magento\Framework\App\Response\Http            $redirect
 
     )
     {
@@ -22,10 +24,22 @@ class AfterSuccess implements ObserverInterface
         $this->url = $url;
         $this->responseFactory = $responseFactory;
         $this->logger = $logger;
+        $this->productMetadata = $productMetadata;
+        $this->redirect = $redirect;
     }
 
     public function execute(Observer $observer)
     {
+        $version_check = 1;
+
+        if ($this->productMetadata->getVersion() >= 2.3 && $this->productMetadata->getVersion() < 2.4) {
+            $version_check = 0;
+        }
+
+        if (empty($version_check)) {
+            return false;
+        }
+
         $order = $this->payment->getOrder();
         $paymentMethod = $order->getPayment()->getMethodInstance()->getCode();
 
@@ -39,7 +53,7 @@ class AfterSuccess implements ObserverInterface
 
             $redirectOrder = $this->url->getUrl('cryptapi/index/payment', $params);
             $this->responseFactory->create()->setRedirect($redirectOrder)->sendResponse();
-            die();
+            return $this->redirect->setRedirect($redirectOrder);
         }
     }
 }

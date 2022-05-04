@@ -49,20 +49,20 @@ class Status implements HttpGetActionInterface
 
         $history = json_decode($metaData['cryptapi_history'], true);
 
-        $calc = $this->payment::calcOrder($history, $metaData['cryptapi_total'], $metaData['cryptapi_total_fiat']);
+        $calc = $this->payment::calcOrder($history, $metaData);
 
         $already_paid = $calc['already_paid'];
         $already_paid_fiat = $calc['already_paid_fiat'] <= 0 ? 0 : $calc['already_paid_fiat'];
 
         $min_tx = floatval($metaData['cryptapi_min']);
 
-        $remaining = $calc['remaining'];
+        // $remaining = $calc['remaining'];
         $remaining_pending = $calc['remaining_pending'];
         $remaining_fiat = $calc['remaining_fiat'];
 
         $cryptapi_pending = '0';
         if ($remaining_pending <= 0 && !$this->payment->hasBeenPaid($order)) {
-            $cryptapi_pending = 1;
+            $cryptapi_pending = '1';
         }
 
         $counter_calc = (int)$metaData['cryptapi_last_price_update'] + (int)$this->scopeConfig->getValue('payment/cryptapi/refresh_value_interval', \Magento\Store\Model\ScopeInterface::SCOPE_STORE) - time();
@@ -77,17 +77,17 @@ class Status implements HttpGetActionInterface
 
         $data = [
             'is_paid' => $this->payment->hasBeenPaid($order),
-            'is_pending' => (int)$cryptapi_pending,
+            'is_pending' => (int)($cryptapi_pending),
             'crypto_total' => floatval($metaData['cryptapi_total']),
             'qr_code_value' => $metaData['cryptapi_qr_code_value'],
             'cancelled' => $metaData['cryptapi_cancelled'],
-            'remaining' => $remaining_pending < 0 ? 0 : $remaining_pending,
+            'remaining' => $remaining_pending <= 0 ? 0 : $remaining_pending,
             'fiat_remaining' => $this->priceHelper->currency($remaining_fiat, true, false),
             'coin' => strtoupper($metaData['cryptapi_currency']),
-            'show_min_fee' => (int)$showMinFee,
+            'show_min_fee' => $showMinFee,
             'order_history' => $history,
             'already_paid' => $already_paid,
-            'already_paid_fiat' => $this->priceHelper->currency(floatval($already_paid_fiat) <= 0 ? 0 : floatval($already_paid_fiat), true, false),
+            'already_paid_fiat' => $this->priceHelper->currency($remaining_pending <= 0 ? 0 : floatval($already_paid_fiat), true, false),
             'counter' => (string)$counter_calc,
             'fiat_symbol' => $order->getOrderCurrencyCode()
         ];

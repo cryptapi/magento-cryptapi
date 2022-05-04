@@ -55,7 +55,6 @@ class Fee extends AbstractTotal
         $total->setGrandTotal($total->getGrandTotal());
         $total->setBaseGrandTotal($total->getBaseGrandTotal());
 
-
         $quote->setFee($fee);
 
         return $this;

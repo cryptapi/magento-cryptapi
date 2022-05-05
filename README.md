@@ -7,6 +7,7 @@ Accept cryptocurrency payments on your Magento store
 
 ```
 Magento >= 2.4
+Magento >= 2.3.5
 ```
 
 ### Description
@@ -138,6 +139,9 @@ The easiest and fastest way is via our live chat on our [website](https://crypta
 * Minor fixes
 
 #### 3.0.2
+* Minor fixes
+
+#### 3.0.3
 * Minor fixes
 
 ### Upgrade Notice

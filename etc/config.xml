@@ -4,7 +4,7 @@
 <default>
     <payment>
         <cryptapi>
-            <model>Cryptapi\Cryptapi\Model\Pay</model>
+            <model>Cryptapi\Cryptapi\Model\Method\CryptapiPayment</model>
             <title>Cryptocurrency</title>
             <active>0</active>
             <show_branding>1</show_branding>
@@ -12,6 +12,12 @@
             <qrcode_size>300</qrcode_size>
             <qrcode_default>1</qrcode_default>
             <allowspecific>0</allowspecific>
+            <qrcode_setting>without_ammount</qrcode_setting>
+            <color_scheme>auto</color_scheme>
+            <refresh_value_interval>300</refresh_value_interval>
+            <order_cancelation_timeout>3600</order_cancelation_timeout>
+            <fee_order_percentage>none</fee_order_percentage>
+            <can_use_checkout>1</can_use_checkout>
         </cryptapi>
     </payment>
 </default>

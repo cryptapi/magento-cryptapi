@@ -1,0 +1,14 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<schema xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+        xsi:noNamespaceSchemaLocation="urn:magento:framework:Setup/Declaration/Schema/etc/schema.xsd">
+    <table name="cryptapi" resource="default" engine="innodb">
+        <column xsi:type="int" name="order_id" unsigned="false" nullable="false" comment="Order ID"/>
+        <column xsi:type="text" name="response" nullable="true" comment="Cryptapi Table"/>
+    </table>
+    <table name="quote" resource="default" engine="innodb">
+        <column xsi:type="float" name="cryptapi_fee" nullable="true" comment="Custom Fee from Cryptapi"/>
+    </table>
+    <table name="sales_order" resource="sales" engine="innodb" comment="Sales Order">
+        <column xsi:type="float" name="cryptapi_fee" nullable="true" comment="Custom Fee from Cryptapi"/>
+    </table>
+</schema>

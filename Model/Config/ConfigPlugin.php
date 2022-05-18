@@ -1,8 +1,6 @@
 <?php
 
-namespace Cryptapi\Cryptapi\Model;
-
-use function _PHPStan_76800bfb5\RingCentral\Psr7\str;
+namespace Cryptapi\Cryptapi\Model\Config;
 
 class ConfigPlugin
 {

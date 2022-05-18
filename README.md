@@ -6,7 +6,8 @@ Accept cryptocurrency payments on your Magento store
 ### Requirements:
 
 ```
-Magento >= 2.3
+Magento >= 2.4
+Magento >= 2.3.5
 ```
 
 ### Description
@@ -18,19 +19,21 @@ All you need is to provide your crypto address.
 
 The CryptAPI extension enables your Magento store to get receive payments in cryptocurrency, with a simple setup and no sign-ups required.
 
-Currently accepted cryptocurrencies are:
+#### Accepted cryptocurrencies & tokens include:
 
 * (BTC) Bitcoin
+* (ETH) Ethereum
 * (BCH) Bitcoin Cash
 * (LTC) Litecoin
-* (ETH) Ethereum
 * (XMR) Monero
-* (IOTA) IOTA
+* (TRX) Tron
+* (BNB) Binance Coin
+* (USDT) USDT
 
-CryptAPI will attempt to automatically convert the value you set on your store to the cryptocurrency your customer chose.
-Exchange rates are fetched hourly from CoinMarketCap.
+CryptAPI plugin will attempt to automatically convert the value you set on your store to the cryptocurrency your customer chose.
+Exchange rates are fetched every 5 minutes.
 
-Supported currencies for automatic exchange rates are:
+### Supported currencies for automatic exchange rates are:
 
 * (USD) United States Dollar
 * (EUR) Euro
@@ -58,12 +61,15 @@ For more info on our fees [click here](https://cryptapi.io/get_started/#fees)
 
 ### Installation
 
-1. Upload code to folder app/code/Cryptapi/Cryptapi
+1. Upload code to the folder app/code/Cryptapi/Cryptapi
 
 2. Enter following commands to install module:
 ```bash
-php bin/magento setup:upgrade
-php bin/magento setup:static-content:deploy
+php bin/magento module:enable Cryptapi_Cryptapi
+php bin/magento setup:upgrade 
+php bin/magento setup:di:compile 
+php bin/magento setup:static-content:deploy -f 
+php bin/magento cache:flush 
 php bin/magento cache:enable cryptapi_cryptocurrencies
 ```
 
@@ -117,6 +123,26 @@ The easiest and fastest way is via our live chat on our [website](https://crypta
 * New API URL.
 * UI Improvements
 * Minor Bug Fixes
+
+#### 3.0
+* New settings and color schemes to fit dark mode
+* New settings to add CryptAPI's services fees to the checkout
+* New settings to add blockchain fees to the checkout
+* Upgrade the settings
+* Added a history of transactions to the order payment page
+* Better handling of partial payments
+* Disable QR Code with value in certain currencies due to some wallets not supporting it
+* Minor fixes
+* UI Improvements
+
+#### 3.0.1
+* Minor fixes
+
+#### 3.0.2
+* Minor fixes
+
+#### 3.0.3
+* Minor fixes
 
 ### Upgrade Notice
 * No breaking changes.

@@ -1,20 +1,16 @@
 <?php
 
-namespace Cryptapi\Cryptapi\Model;
+namespace Cryptapi\Cryptapi\Model\Ui;
 
 use Magento\Checkout\Model\ConfigProviderInterface;
 use Magento\Framework\Escaper;
 use Magento\Payment\Helper\Data as PaymentHelper;
 use Cryptapi\Cryptapi\lib\CryptAPIHelper;
 
-class ConfigProvider implements ConfigProviderInterface
+class CryptapiConfigProvider implements ConfigProviderInterface
 {
     const CODE = 'cryptapi';
 
-    /**
-     * @param PaymentHelper $paymentHelper
-     * @param Escaper $escaper
-     */
     public function __construct(
         \Magento\Framework\App\Config\ScopeConfigInterface $scopeConfig,
         PaymentHelper                                      $paymentHelper,
@@ -68,13 +64,15 @@ class ConfigProvider implements ConfigProviderInterface
 
         $output = [];
 
-        foreach (json_decode($available_cryptos) as $ticker => $coin) {
-            foreach ($selected as $uid => $data) {
-                if ($ticker == $data['cryptocurrency'])
-                    $output[] = [
-                        'value' => $data['cryptocurrency'],
-                        'type' => $coin,
-                    ];
+        if (!empty($selected)) {
+            foreach (json_decode($available_cryptos) as $ticker => $coin) {
+                foreach ($selected as $uuid => $data) {
+                    if ($ticker == $data['cryptocurrency'])
+                        $output[] = [
+                            'value' => $data['cryptocurrency'],
+                            'type' => $coin,
+                        ];
+                }
             }
         }
 

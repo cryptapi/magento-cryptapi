@@ -173,25 +173,87 @@ class CryptAPIHelper
         return $params;
     }
 
-    public static function get_conversion($coin, $total, $currency, $disable_conversion)
+    public static function get_static_qrcode($address, $coin, $value, $size = 300)
+    {
+        if (empty($address)) {
+            return null;
+        }
+
+        if (!empty($value)) {
+            $params = [
+                'address' => $address,
+                'value' => $value,
+                'size' => $size,
+            ];
+        } else {
+            $params = [
+                'address' => $address,
+                'size' => $size,
+            ];
+        }
+
+        $response = CryptAPIHelper::_request($coin, 'qrcode', $params);
+
+        if ($response->status == 'success') {
+            return ['qr_code' => $response->qr_code, 'uri' => $response->payment_uri];
+        }
+
+        return null;
+    }
+
+    public static function get_conversion($from, $to, $value, $disable_conversion)
     {
 
         if ($disable_conversion) {
-            return $total;
+            return $value;
         }
 
         $params = [
-            'value' => $total,
-            'from' => $currency,
+            'from' => $from,
+            'to' => $to,
+            'value' => $value,
         ];
 
-        $response = CryptAPIHelper::_request($coin, 'convert', $params);
+        $response = CryptAPIHelper::_request('', 'convert', $params);
 
         if ($response->status == 'success') {
             return $response->value_coin;
         }
 
         return null;
+    }
+
+    public static function get_estimate($coin)
+    {
+
+        $params = [
+            'addresses' => 1,
+            'priority' => 'default',
+        ];
+
+        $response = CryptAPIHelper::_request($coin, 'estimate', $params);
+
+        if ($response->status == 'success') {
+
+            return $response->estimated_cost_currency;
+        }
+
+        return null;
+    }
+
+    public static function sig_fig($value, $digits)
+    {
+        if ($value == 0) {
+            $decimalPlaces = $digits - 1;
+        } elseif ($value < 0) {
+            $decimalPlaces = $digits - floor(log10($value * -1)) - 1;
+        } else {
+            $decimalPlaces = $digits - floor(log10($value)) - 1;
+        }
+
+        $answer = ($decimalPlaces > 0) ?
+            number_format($value, $decimalPlaces, '.', '') : round($value, $decimalPlaces);
+        return $answer;
     }
 
     private static function _request($coin, $endpoint, $params = [], $assoc = false)

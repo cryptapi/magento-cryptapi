@@ -5,7 +5,7 @@
     <type name="Magento\Checkout\Model\CompositeConfigProvider">
         <arguments>
             <argument name="configProviders" xsi:type="array">
-                <item name="custom_payment_config_provider" xsi:type="object">Cryptapi\Cryptapi\Model\ConfigProvider</item>
+                <item name="custom_payment_config_provider" xsi:type="object">Cryptapi\Cryptapi\Model\Ui\CryptapiConfigProvider</item>
             </argument>
         </arguments>
     </type>

@@ -6,7 +6,7 @@ define([
 
     return Component.extend({
         defaults: {
-            template: 'Cryptapi_Cryptapi/cryptapi'
+            template: 'Cryptapi_Cryptapi/checkout/payment/cryptapi'
         },
 
         getCryptocurrencies: function () {
@@ -27,9 +27,7 @@ define([
         },
 
         getSelectedCoin() {
-            var selected = document.getElementById("cryptapi_payment_cryptocurrency_id").value;
-
-            return selected;
+            return document.getElementById("cryptapi_payment_cryptocurrency_id").value;
         }
     });
 });

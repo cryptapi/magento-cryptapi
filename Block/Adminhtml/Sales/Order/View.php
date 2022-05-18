@@ -1,7 +1,9 @@
 <?php
 namespace Cryptapi\Cryptapi\Block\Adminhtml\Sales\Order;
 
-class View extends \Magento\Backend\Block\Template
+use Magento\Backend\Block\Template;
+
+class View extends Template
 {
     protected $helper;
     protected $request;

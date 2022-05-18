@@ -17,12 +17,50 @@
                                                         <item name="renders" xsi:type="array">
                                                             <item name="children" xsi:type="array">
                                                                 <item name="cryptapi-payments" xsi:type="array">
-                                                                    <item name="component" xsi:type="string">Cryptapi_Cryptapi/js/cryptapi-payments</item>
+                                                                    <item name="component" xsi:type="string">Cryptapi_Cryptapi/js/view/checkout/payment/cryptapi-payments</item>
                                                                     <item name="methods" xsi:type="array">
                                                                         <item name="cryptapi" xsi:type="array">
                                                                             <item name="isBillingAddressRequired" xsi:type="boolean">true</item>
                                                                         </item>
                                                                     </item>
+                                                                </item>
+                                                            </item>
+                                                        </item>
+                                                        <item name="additional-payment-validators" xsi:type="array">
+                                                            <item name="children" xsi:type="array">
+                                                                <item name="cryptapi-validation" xsi:type="array">
+                                                                    <item name="component" xsi:type="string">Cryptapi_Cryptapi/js/view/cryptapi-validation</item>
+                                                                </item>
+                                                            </item>
+                                                        </item>
+                                                    </item>
+                                                </item>
+                                            </item>
+                                        </item>
+                                    </item>
+                                </item>
+                                <item name="sidebar" xsi:type="array">
+                                    <item name="children" xsi:type="array">
+                                        <item name="summary" xsi:type="array">
+                                            <item name="children" xsi:type="array">
+                                                <item name="totals" xsi:type="array">
+                                                    <item name="children" xsi:type="array">
+                                                        <item name="fee" xsi:type="array">
+                                                            <item name="component" xsi:type="string">Cryptapi_Cryptapi/js/view/checkout/cart/totals/fee</item>
+                                                            <item name="sortOrder" xsi:type="string">20</item>
+                                                            <item name="config" xsi:type="array">
+                                                                <item name="template" xsi:type="string">Cryptapi_Cryptapi/checkout/cart/totals/fee</item>
+                                                                <item name="title" xsi:type="string" translate="true">Service Fee</item>
+                                                            </item>
+                                                        </item>
+                                                    </item>
+                                                </item>
+                                                <item name="cart_items" xsi:type="array">
+                                                    <item name="children" xsi:type="array">
+                                                        <item name="details" xsi:type="array">
+                                                            <item name="children" xsi:type="array">
+                                                                <item name="subtotal" xsi:type="array">
+                                                                    <item name="component" xsi:type="string">Magento_Tax/js/view/checkout/summary/item/details/subtotal</item>
                                                                 </item>
                                                             </item>
                                                         </item>
@@ -38,5 +76,8 @@
                 </argument>
             </arguments>
         </referenceBlock>
+        <referenceContainer name="before.body.end">
+            <block class="Cryptapi\Cryptapi\Block\Payment" name="cryptapi_script" template="Cryptapi_Cryptapi::script.phtml"/>
+        </referenceContainer>
     </body>
 </page>

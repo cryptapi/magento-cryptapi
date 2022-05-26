@@ -16,7 +16,8 @@
             <color_scheme>auto</color_scheme>
             <refresh_value_interval>300</refresh_value_interval>
             <order_cancelation_timeout>3600</order_cancelation_timeout>
-            <fee_order_percentage>none</fee_order_percentage>
+            <add_blockchain_fee>1</add_blockchain_fee>
+            <fee_order_percentage>0.01</fee_order_percentage>
             <can_use_checkout>1</can_use_checkout>
         </cryptapi>
     </payment>

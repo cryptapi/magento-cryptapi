@@ -85,7 +85,9 @@ class Payment extends Template
 
             $callbackUrl = $this->payment->getCallbackUrl();
 
-            $api = new CryptAPIHelper($selected, $address, $callbackUrl, $params, true);
+            $apiKey = $this->scopeConfig->getValue('payment/cryptapi/api_key', \Magento\Store\Model\ScopeInterface::SCOPE_STORE);
+
+            $api = new CryptAPIHelper($selected, $address, $apiKey, $callbackUrl, $params, true);
             $addressIn = $api->get_address();
 
             $qrCode = $api->get_qrcode('', $qrCodeSize);

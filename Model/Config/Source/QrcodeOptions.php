@@ -7,10 +7,10 @@ class QrcodeOptions implements \Magento\Framework\Data\OptionSourceInterface
     public function toOptionArray()
     {
         return [
-            'without_ammount' => 'Default Without Ammount',
-            'ammount' => 'Default Ammount',
-            'hide_ammount' => 'Hide Ammount',
-            'hide_without_ammount' => 'Hide Without Ammount',
+            'without_ammount' => 'Default Without Amount',
+            'ammount' => 'Default Amount',
+            'hide_ammount' => 'Hide Amount',
+            'hide_without_ammount' => 'Hide Without Amount',
         ];
     }
 }

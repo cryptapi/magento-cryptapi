@@ -59,6 +59,7 @@ class CryptapiConfigProvider implements ConfigProviderInterface
         }
 
         $selected = json_decode($this->scopeConfig->getValue('payment/cryptapi/supported_cryptocurrencies/cryptocurrencies', \Magento\Store\Model\ScopeInterface::SCOPE_STORE), true);
+        $apiKey = $this->scopeConfig->getValue('payment/cryptapi/api_key', \Magento\Store\Model\ScopeInterface::SCOPE_STORE);
 
         $available_cryptos = $this->serializer->unserialize($this->cache->load($cacheKey));
 
@@ -67,11 +68,13 @@ class CryptapiConfigProvider implements ConfigProviderInterface
         if (!empty($selected)) {
             foreach (json_decode($available_cryptos) as $ticker => $coin) {
                 foreach ($selected as $uuid => $data) {
-                    if ($ticker == $data['cryptocurrency'])
-                        $output[] = [
-                            'value' => $data['cryptocurrency'],
-                            'type' => $coin,
-                        ];
+                    if (!empty($data['cryptocurrency_address'] || !empty($apiKey))) { // Check for API Key / Address configuration. Prevents unexpected errors.
+                        if ($ticker == $data['cryptocurrency'])
+                            $output[] = [
+                                'value' => $data['cryptocurrency'],
+                                'type' => $coin,
+                            ];
+                    }
                 }
             }
         }

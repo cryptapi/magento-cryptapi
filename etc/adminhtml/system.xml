@@ -24,7 +24,8 @@
                 </field>
                 <field id="fee_order_percentage" translate="label" type="select" sortOrder="5" showInDefault="1" showInWebsite="1" showInStore="1">
                     <label>Service fee manager</label>
-                    <comment>Set the CryptAPI service fee you want to charge the costumer. Note: Fee you want to charge your costumers (to cover CryptAPI\'s fees fully or partially)</comment>
+                    <comment>Set the CryptAPI service fee you want to charge the costumer. Note: Fee you want to charge your costumers (to cover CryptAPI\'s fees fully or partially)
+                    </comment>
                     <source_model>Cryptapi\Cryptapi\Model\Config\Source\FeesList</source_model>
                 </field>
                 <field id="qrcode_default" translate="label" type="select" sortOrder="6" showInDefault="1" showInWebsite="1" showInStore="1">
@@ -47,39 +48,54 @@
                 </field>
                 <field id="refresh_value_interval" translate="label" type="select" sortOrder="10" showInDefault="1" showInWebsite="1" showInStore="1">
                     <label>Refresh converted value</label>
-                    <comment>The system will automatically update the conversion value of the invoices (with real-time data), every X minutes. This feature is helpful whenever a customer takes long time to pay a generated invoice and the selected crypto a volatile coin/token (not stable coin). Warning: Setting this setting to none might create conversion issues, as we advise you to keep it at 5 minutes.</comment>
+                    <comment>The system will automatically update the conversion value of the invoices (with real-time data), every X minutes. This feature is helpful whenever a customer
+                        takes long time to pay a generated invoice and the selected crypto a volatile coin/token (not stable coin). Warning: Setting this setting to none might create
+                        conversion issues, as we advise you to keep it at 5 minutes.
+                    </comment>
                     <source_model>Cryptapi\Cryptapi\Model\Config\Source\RefreshList</source_model>
                 </field>
                 <field id="order_cancelation_timeout" translate="label" type="select" sortOrder="11" showInDefault="1" showInWebsite="1" showInStore="1">
                     <label>Order cancelation timeout</label>
-                    <comment>Selects the ammount of time the user has to  pay for the order. When this time is over, order will be marked as 'Cancelled' and every paid value will be ignored. Notice: If the user still sends money to the generated address, value will still be redirected to you. Warning: We do not advice more than 1 Hour.</comment>
+                    <comment>Selects the ammount of time the user has to pay for the order. When this time is over, order will be marked as 'Cancelled' and every paid value will be ignored.
+                        Notice: If the user still sends money to the generated address, value will still be redirected to you. Warning: We do not advice more than 1 Hour.
+                    </comment>
                     <source_model>Cryptapi\Cryptapi\Model\Config\Source\CancellationList</source_model>
                 </field>
-                <group id="supported_cryptocurrencies" translate="label" type="text" sortOrder="12" showInDefault="1" showInWebsite="1"
+                <field id="api_key" translate="label" type="text" sortOrder="12" showInDefault="1" showInWebsite="1" showInStore="1">
+                    <label>API Key</label>
+                    <comment>
+                        <![CDATA[Insert here your CryptAPI Pro API Key. You can get one here: <a href="https://pro.cryptapi.io/" target="_blank">https://pro.cryptapi.io/</a>. <strong>This field is optional.</strong>]]>
+                    </comment>
+                </field>
+                <group id="supported_cryptocurrencies" translate="label" type="text" sortOrder="13" showInDefault="1" showInWebsite="1"
                        showInStore="1">
                     <label>Cryptocurrencies</label>
-                    <field id="cryptocurrencies" translate="label" sortOrder="13" showInDefault="1" showInWebsite="1"
+                    <field id="cryptocurrencies" translate="label" sortOrder="14" showInDefault="1" showInWebsite="1"
                            showInStore="1">
                         <label>Add you address here:</label>
                         <frontend_model>Cryptapi\Cryptapi\Block\Adminhtml\Cryptocurrencies</frontend_model>
                         <backend_model>Magento\Config\Model\Config\Backend\Serialized\ArraySerialized</backend_model>
-                        <comment>Important: Add only 1 address per cryptocurrency!</comment>
+                        <comment>
+                            <![CDATA[Add only 1 address per cryptocurrency!<br/><strong>Important:</strong> If you are using CryptAPI Pro you can choose if setting the receiving addresses here bellow or in your CryptAPI Pro settings page.<br/> - In order to set the addresses on plugin settings, you need to select “Address Override” while creating the API key.<br/> - In order to set the addresses on CryptAPI Pro settings, you need to NOT select “Address Override” while creating the API key.]]>
+                        </comment>
                     </field>
                 </group>
-                <field id="allowspecific" translate="label" type="allowspecific" sortOrder="14" showInDefault="1" showInWebsite="1" showInStore="1">
+                <field id="allowspecific" translate="label" type="allowspecific" sortOrder="15" showInDefault="1" showInWebsite="1" showInStore="1">
                     <label>Countries</label>
                     <source_model>Magento\Payment\Model\Config\Source\Allspecificcountries</source_model>
                 </field>
-                <field id="specificcountry" translate="label" type="multiselect" sortOrder="15" showInDefault="1" showInWebsite="1" showInStore="1">
+                <field id="specificcountry" translate="label" type="multiselect" sortOrder="16" showInDefault="1" showInWebsite="1" showInStore="1">
                     <label>Specific Countries</label>
                     <source_model>Magento\Directory\Model\Config\Source\Country</source_model>
                 </field>
-                <field id="sort_order" translate="label" type="text" sortOrder="16" showInDefault="1" showInWebsite="1" showInStore="1">
+                <field id="sort_order" translate="label" type="text" sortOrder="17" showInDefault="1" showInWebsite="1" showInStore="1">
                     <label>Sort Order</label>
                 </field>
-                <field id="disable_conversion" translate="label" type="select" sortOrder="17" showInDefault="1" showInWebsite="1" showInStore="1">
+                <field id="disable_conversion" translate="label" type="select" sortOrder="18" showInDefault="1" showInWebsite="1" showInStore="1">
                     <label>Disable price conversion</label>
-                    <comment>Attention: This option will disable the price conversion for ALL cryptocurrencies! If you check this, pricing will not be converted from the currency of your shop to the cryptocurrency selected by the user, and users will be requested to pay the same value as shown on your shop, regardless of the cryptocurrency selected</comment>
+                    <comment>Attention: This option will disable the price conversion for ALL cryptocurrencies! If you check this, pricing will not be converted from the currency of your
+                        shop to the cryptocurrency selected by the user, and users will be requested to pay the same value as shown on your shop, regardless of the cryptocurrency selected
+                    </comment>
                     <source_model>Magento\Config\Model\Config\Source\Yesno</source_model>
                 </field>
             </group>

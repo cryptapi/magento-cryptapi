@@ -47,10 +47,30 @@ class ConfigPlugin
 
             if (!empty($groups)) {
                 $cryptocurrencies = $groups["cryptapi"]["groups"]["supported_cryptocurrencies"]["fields"]["cryptocurrencies"]["value"];
+                $apiKey = $groups["cryptapi"]["fields"]["api_key"]["value"];
+                $cryptocurrenciesArray = array_map(function ($val) {
+                    return $val['cryptocurrency'];
+                }, array_filter($cryptocurrencies));
 
-                $cryptocurrencies_array = array_map(function($val){return $val['cryptocurrency'];}, array_filter($cryptocurrencies));
+                $hasEmptyAddr = false;
 
-                if (count($cryptocurrencies_array) !== count(array_unique($cryptocurrencies_array, SORT_STRING))) {
+                $c = 0;
+                foreach ($cryptocurrencies as $ticker => $addr) {
+                    if($c < (count($cryptocurrencies) - 1)) {
+                        if (empty($addr["cryptocurrency_address"])) {
+                            $hasEmptyAddr = true;
+                        }
+                    }
+                    $c++;
+                }
+
+                if ($hasEmptyAddr && empty($apiKey)) {
+                    throw new \Magento\Framework\Exception\AlreadyExistsException(
+                        __("Please make sure you enter either the cryptocurrency address or an API Key.")
+                    );
+                }
+
+                if (count($cryptocurrenciesArray) !== count(array_unique($cryptocurrenciesArray, SORT_STRING))) {
                     throw new \Magento\Framework\Exception\AlreadyExistsException(
                         __('You can only add one address per cryptocurrency')
                     );

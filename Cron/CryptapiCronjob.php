@@ -58,7 +58,7 @@ class CryptapiCronjob
 
             $remaining = $calc['remaining'];
             $remaining_pending = $calc['remaining_pending'];
-            $remaining_fiat = $calc['remaining_fiat'];
+            $already_paid = $calc['already_paid'];
 
             if (!empty($metaData['cryptapi_address']) && $value_refresh !== 0 && $metaData['cryptapi_cancelled'] !== '1' && (int)$metaData['cryptapi_last_price_update'] + $value_refresh <= time() && $remaining_pending > 0) {
 
@@ -84,7 +84,7 @@ class CryptapiCronjob
                 $this->helper->updatePaymentData($orderQuoteId, 'cryptapi_last_price_update', time());
             }
 
-            if ($order_timeout !== 0 && ((int)strtotime($order->getCreatedAt()) + $order_timeout) <= time() && empty($metaData['cryptapi_pending']) && $remaining_fiat <= $order->getGrandTotal() && (string)$metaData['cryptapi_cancelled'] === '0') {
+            if ($order_timeout !== 0 && ((int)strtotime($order->getCreatedAt()) + $order_timeout) <= time() && empty($metaData['cryptapi_pending']) && $already_paid <= 0 && (string)$metaData['cryptapi_cancelled'] === '0') {
                 $state = \Magento\Sales\Model\Order::STATE_CANCELED;
                 $status = \Magento\Sales\Model\Order::STATE_CANCELED;
                 $order->setState($state);

@@ -9,6 +9,11 @@ define(
             validate: function () {
                 var isValid = false;
 
+                if(!document.getElementById('cryptapi')) {
+                    isValid = true;
+                    return isValid;
+                }
+
                 if (document.getElementById("cryptapi_payment_cryptocurrency_id").value) {
                     isValid = true;
                 }

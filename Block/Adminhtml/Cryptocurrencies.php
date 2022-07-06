@@ -15,7 +15,7 @@ class Cryptocurrencies extends AbstractFieldArray
             'label' => __('Cryptocurrency'),
             'renderer' => $this->getCryptosField(),
         ]);
-        $this->addColumn('cryptocurrency_address', ['label' => __('Cryptocurrency Address'), 'class' => 'required-entry']);
+        $this->addColumn('cryptocurrency_address', ['label' => __('Cryptocurrency Address'), 'class' => '']); // required-entry
         $this->_addAfter = false;
         $this->_addButtonLabel = __('Add More');
     }

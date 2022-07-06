@@ -64,7 +64,7 @@ class Callback implements HttpGetActionInterface
 
             $history[$data['uuid']] = [
                 'timestamp' => time(),
-                'value_paid' => $paid,
+                'value_paid' => CryptAPIHelper::sig_fig($paid, 6),
                 'value_paid_fiat' => $fiat_conversion,
                 'pending' => $data['pending']
             ];

@@ -161,6 +161,7 @@ class CryptapiPayment extends AbstractMethod
             'cryptapi_min' => $minTx,
             'cryptapi_qr_code_value' => '',
             'cryptapi_qr_code' => '',
+            'cryptapi_payment_url' => ''
         ];
 
         $paymentData = json_encode($paymentData);

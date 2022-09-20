@@ -1,0 +1,28 @@
+<!--@subject {{trans "New Order %order_id. Please send a %order_coin payment." order_id=$data.order order_coin=$data.coin}} @-->
+{{template config_path="design/email/header_template"}}
+<table style="float:left; margin-right: 10px" class="fue-abc-items">
+    <tr class="email-info">
+        <td>
+            <p>{{trans "Hello. Order %order_id was created successfully and a payment address was generated for the cryptocurrency %order_coin." order_id=$data.order
+                order_coin=$data.coin}}</p>
+        </td>
+    </tr>
+    <tr>
+        <td>
+            <p>
+                To complete your order or check payment status, use the button provided bellow:
+            </p>
+        </td>
+    </tr>
+    <tr>
+        <td style="text-align: center;">
+            <p style="text-align: center"><a style="padding: 10px 12px; border-radius: 8px; border: 1px solid #2695D3; background-color: #2695D3; color: #fff; margin: 40px 0;" href="{{var data.url}}"
+                  target="_blank">Pay Now</a><br/>
+            </p>
+            <p>
+                ({{var data.url}})
+            </p>
+        </td>
+    </tr>
+</table>
+{{template config_path="design/email/footer_template"}}

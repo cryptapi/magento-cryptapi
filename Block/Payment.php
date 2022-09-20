@@ -18,6 +18,8 @@ class Payment extends Template
         \Magento\Sales\Api\OrderRepositoryInterface        $orderRepository,
         \Magento\Framework\App\Request\Http                $request,
         \Magento\Framework\App\ProductMetadataInterface    $productMetadata,
+        \Magento\Store\Model\StoreManagerInterface         $storeManager,
+        \Cryptapi\Cryptapi\Helper\Mail                     $mail,
         array                                              $data = []
     )
     {
@@ -28,6 +30,9 @@ class Payment extends Template
         $this->request = $request;
         $this->orderRepository = $orderRepository;
         $this->productMetadata = $productMetadata;
+        $this->mail = $mail;
+        $this->storeManager = $storeManager;
+
     }
 
     public function getTemplateValues()
@@ -54,10 +59,8 @@ class Payment extends Template
 
         $metaData = json_decode($metaData, true);
 
-        if (!$this->productMetadata->getVersion() >= 2.3 && $this->productMetadata->getVersion() < 2.4) {
-            if ($nonce != $metaData['cryptapi_nonce']) {
-                return false;
-            }
+        if ($nonce != $metaData['cryptapi_nonce']) {
+            return false;
         }
 
         $cryptoValue = $metaData['cryptapi_total'];
@@ -66,6 +69,10 @@ class Payment extends Template
         if (isset($metaData['cryptapi_address']) && !empty($metaData['cryptapi_address'])) {
             $addressIn = $metaData['cryptapi_address'];
         } else {
+            /*
+             * Makes request to API and generates all the payment data needed
+             */
+
             $selected = $cryptoCoin;
 
             $address = '';
@@ -96,6 +103,10 @@ class Payment extends Template
             $this->helper->updatePaymentData($order->getQuoteId(), 'cryptapi_address', $addressIn);
             $this->helper->updatePaymentData($order->getQuoteId(), 'cryptapi_qr_code_value', $qrCodeValue['qr_code']);
             $this->helper->updatePaymentData($order->getQuoteId(), 'cryptapi_qr_code', $qrCode['qr_code']);
+            $this->helper->updatePaymentData($order->getQuoteId(), 'cryptapi_payment_url', $this->storeManager->getStore()->getUrl('cryptapi/index/payment/order_id/' . $order->getId() . '/nonce/' . $metaData['cryptapi_nonce']));
+
+            $metaData = json_decode($this->helper->getPaymentResponse($order->getQuoteId()), true);
+            $this->mail->sendMail($order, $metaData);
         }
 
         $ajaxParams = [

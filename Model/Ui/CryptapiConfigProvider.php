@@ -49,7 +49,7 @@ class CryptapiConfigProvider implements ConfigProviderInterface
         $cacheKey = \Cryptapi\Cryptapi\Model\Cache\Type::TYPE_IDENTIFIER;
         $cacheTag = \Cryptapi\Cryptapi\Model\Cache\Type::CACHE_TAG;
 
-        if (empty($this->cache->load($cacheKey))) {
+        if (empty($this->cache->load($cacheKey)) || !json_decode($this->cache->load($cacheKey))) {
             $this->cache->save(
                 $this->serializer->serialize(json_encode(CryptAPIHelper::get_supported_coins())),
                 $cacheKey,

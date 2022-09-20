@@ -82,7 +82,7 @@ class Status implements HttpGetActionInterface
             'qr_code_value' => $metaData['cryptapi_qr_code_value'],
             'cancelled' => $metaData['cryptapi_cancelled'],
             'remaining' => $remaining_pending <= 0 ? 0 : $remaining_pending,
-            'fiat_remaining' => $this->priceHelper->currency($remaining_fiat, true, false),
+            'fiat_remaining' => $this->priceHelper->currency(($remaining_fiat <= 0 ? 0 : $remaining_fiat), true, false),
             'coin' => strtoupper($metaData['cryptapi_currency']),
             'show_min_fee' => $showMinFee,
             'order_history' => $history,

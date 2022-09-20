@@ -4,6 +4,7 @@ namespace Cryptapi\Cryptapi\Observer;
 
 use Magento\Framework\Event\Observer;
 use Magento\Framework\Event\ObserverInterface;
+use Cryptapi\Cryptapi\Helper\Mail;
 
 class AfterSuccess implements ObserverInterface
 {
@@ -16,7 +17,6 @@ class AfterSuccess implements ObserverInterface
         \Psr\Log\LoggerInterface                        $logger,
         \Magento\Framework\App\ProductMetadataInterface $productMetadata,
         \Magento\Framework\App\Response\Http            $redirect
-
     )
     {
         $this->helper = $helper;

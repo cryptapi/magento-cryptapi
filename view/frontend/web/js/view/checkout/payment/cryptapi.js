@@ -1,6 +1,8 @@
 /* @api */
 define([
-    'Magento_Checkout/js/view/payment/default'
+    'Magento_Checkout/js/view/payment/default',
+    'jquery',
+    'domReady!'
 ], function (Component) {
     'use strict';
 
@@ -8,15 +10,12 @@ define([
         defaults: {
             template: 'Cryptapi_Cryptapi/checkout/payment/cryptapi'
         },
-
         getCryptocurrencies: function () {
             return window.checkoutConfig.payment.cryptapi.cryptocurrencies;
         },
-
         getInstructions: function () {
             return window.checkoutConfig.payment.cryptapi.instructions;
         },
-
         getData: function () {
             return {
                 "method": 'cryptapi',
@@ -25,9 +24,8 @@ define([
                 }
             };
         },
-
         getSelectedCoin() {
-            return document.getElementById("cryptapi_payment_cryptocurrency_id").value;
+            return document.getElementById("cryptapi_payment_cryptocurrency_id")?.value ? document.getElementById("cryptapi_payment_cryptocurrency_id")?.value : '';
         }
     });
 });

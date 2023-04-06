@@ -15,11 +15,13 @@ require([
 
         var linkUrl = url.build('cryptapi/index/cartquote');
 
-        var feeContainer = $('.totals.fee.excl');
+        var feeContainer = $('.cryptapi.totals.fee.excl');
+
+        feeContainer.hide();
 
         setInterval(function () {
             if ($('body').attr('aria-busy') === 'false') {
-                if (quote.paymentMethod?._latestValue.method === 'cryptapi' && parseFloat($('.totals.fee.excl .price').html().replace(/\D/g, '')) > 0) {
+                if (quote?.paymentMethod?._latestValue.method === 'cryptapi' && parseFloat($('.cryptapi.totals.fee.excl .price').html().replace(/\D/g, '')) > 0) {
                     feeContainer.show();
                 } else {
                     feeContainer.hide();

@@ -5,7 +5,7 @@
     <payment>
         <cryptapi>
             <model>Cryptapi\Cryptapi\Model\Method\CryptapiPayment</model>
-            <title>Cryptocurrency</title>
+            <title>Pay With CryptAPI</title>
             <active>0</active>
             <show_branding>1</show_branding>
             <disable_conversion>0</disable_conversion>

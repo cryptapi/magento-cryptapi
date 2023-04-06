@@ -26,42 +26,42 @@ class CryptapiConfigProvider implements ConfigProviderInterface
         $this->serializer = $serializer;
     }
 
-    public function getConfig()
+    public function getConfig() : array
     {
-        $config = [
-            'payment' => array(
-                self::CODE => array(
+        return [
+            'payment' => [
+                self::CODE => [
                     'cryptocurrencies' => $this->getCryptocurrencies(),
                     'instructions' => $this->getInstructions(),
-                )
-            )
+                ]
+            ]
         ];
-        return $config;
     }
 
-    public function getInstructions()
+    public function getInstructions(): \Magento\Framework\Phrase
     {
         return __('Pay with cryptocurrency');
     }
 
-    public function getCryptocurrencies()
+    public function getCryptocurrencies(): array
     {
         $cacheKey = \Cryptapi\Cryptapi\Model\Cache\Type::TYPE_IDENTIFIER;
         $cacheTag = \Cryptapi\Cryptapi\Model\Cache\Type::CACHE_TAG;
 
-        if (empty($this->cache->load($cacheKey)) || !json_decode($this->cache->load($cacheKey))) {
+        if (empty($this->cache->load($cacheKey)) || !$this->serializer->unserialize($this->cache->load($cacheKey))) {
             $this->cache->save(
-                $this->serializer->serialize(json_encode(CryptAPIHelper::get_supported_coins())),
+                $this->serializer->serialize($this->serializer->serialize(CryptAPIHelper::get_supported_coins())),
                 $cacheKey,
                 [$cacheTag],
                 86400
             );
         }
 
-        $selected = json_decode($this->scopeConfig->getValue('payment/cryptapi/supported_cryptocurrencies/cryptocurrencies', \Magento\Store\Model\ScopeInterface::SCOPE_STORE), true);
-        $apiKey = $this->scopeConfig->getValue('payment/cryptapi/api_key', \Magento\Store\Model\ScopeInterface::SCOPE_STORE);
-
         $available_cryptos = $this->serializer->unserialize($this->cache->load($cacheKey));
+
+        $selected = json_decode($this->scopeConfig->getValue('payment/cryptapi/supported_cryptocurrencies/cryptocurrencies', \Magento\Store\Model\ScopeInterface::SCOPE_STORE), true);
+
+        $apiKey = $this->scopeConfig->getValue('payment/cryptapi/api_key', \Magento\Store\Model\ScopeInterface::SCOPE_STORE);
 
         $output = [];
 

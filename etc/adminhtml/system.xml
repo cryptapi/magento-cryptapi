@@ -64,7 +64,7 @@
                 <field id="api_key" translate="label" type="text" sortOrder="12" showInDefault="1" showInWebsite="1" showInStore="1">
                     <label>API Key</label>
                     <comment>
-                        <![CDATA[Insert here your CryptAPI Pro API Key. You can get one here: <a href="https://pro.cryptapi.io/" target="_blank">https://pro.cryptapi.io/</a>. <strong>This field is optional.</strong>]]>
+                        <![CDATA[Insert here your BlockBee API Key. You can get one here: <a href="https://dash.blockbee.io/" target="_blank">https://dash.blockbee.io/</a>. <strong>This field is optional.</strong>]]>
                     </comment>
                 </field>
                 <group id="supported_cryptocurrencies" translate="label" type="text" sortOrder="13" showInDefault="1" showInWebsite="1"
@@ -76,7 +76,7 @@
                         <frontend_model>Cryptapi\Cryptapi\Block\Adminhtml\Cryptocurrencies</frontend_model>
                         <backend_model>Magento\Config\Model\Config\Backend\Serialized\ArraySerialized</backend_model>
                         <comment>
-                            <![CDATA[Add only 1 address per cryptocurrency!<br/><strong>Important:</strong> If you are using CryptAPI Pro you can choose if setting the receiving addresses here bellow or in your CryptAPI Pro settings page.<br/> - In order to set the addresses on plugin settings, you need to select “Address Override” while creating the API key.<br/> - In order to set the addresses on CryptAPI Pro settings, you need to NOT select “Address Override” while creating the API key.]]>
+                            <![CDATA[Add only 1 address per cryptocurrency!<br/><strong>Important:</strong> If you are using BlockBee you can choose if setting the receiving addresses here bellow or in your BlockBee settings page.<br/> - In order to set the addresses on plugin settings, you need to select “Address Override” while creating the API key.<br/> - In order to set the addresses on BlockBee settings, you need to NOT select “Address Override” while creating the API key.]]>
                         </comment>
                     </field>
                 </group>

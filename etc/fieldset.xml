@@ -1,10 +1,9 @@
 <?xml version="1.0"?>
-<config xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
-        xsi:noNamespaceSchemaLocation="urn:magento:framework:DataObject/etc/fieldset.xsd">
+<config xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:noNamespaceSchemaLocation="urn:magento:framework:DataObject/etc/fieldset.xsd">
     <scope id="global">
-            <fieldset id="cryptapi_sales_convert_quote">
-            <field name="fee">
-                <aspect name="to_order" targetField="fee" />
+        <fieldset id="cryptapi_sales_convert_quote">
+            <field name="cryptapi_fee">
+                <aspect name="to_order" targetField="cryptapi_fee"/>
             </field>
         </fieldset>
     </scope>

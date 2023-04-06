@@ -21,7 +21,7 @@ define(
             getValue: function () {
                 var price = 0;
                 if (this.totals()) {
-                    price = totals.getSegment('fee').value;
+                    price = totals.getSegment('cryptapi_fee').value;
                 }
                 return this.getFormattedPrice(price);
             },

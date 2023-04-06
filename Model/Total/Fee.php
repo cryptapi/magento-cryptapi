@@ -48,8 +48,8 @@ class Fee extends AbstractTotal
 
         $fee = $this->calculateFee($quote);
 
-        $total->setTotalAmount('fee', $fee);
-        $total->setBaseTotalAmount('fee', $fee);
+        $total->setTotalAmount('cryptapi_fee', $fee);
+        $total->setBaseTotalAmount('cryptapi_fee', $fee);
         $total->setFee($fee);
         $total->setBaseFee($fee);
         $total->setGrandTotal($total->getGrandTotal());
@@ -77,7 +77,7 @@ class Fee extends AbstractTotal
     public function fetch(Quote $quote, Total $total)
     {
         return [
-            'code' => 'fee',
+            'code' => 'cryptapi_fee',
             'title' => __('Service Fee'),
             'value' => $this->calculateFee($quote),
         ];
@@ -107,7 +107,7 @@ class Fee extends AbstractTotal
 
                 return $totalPrice + $conv;
             }
-        } catch (\Exception $ex) {
+        } catch (\Exception $e) {
             return 0;
         }
 

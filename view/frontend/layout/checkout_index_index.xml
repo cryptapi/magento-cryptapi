@@ -45,7 +45,7 @@
                                             <item name="children" xsi:type="array">
                                                 <item name="totals" xsi:type="array">
                                                     <item name="children" xsi:type="array">
-                                                        <item name="fee" xsi:type="array">
+                                                        <item name="cryptapi_fee" xsi:type="array">
                                                             <item name="component" xsi:type="string">Cryptapi_Cryptapi/js/view/checkout/cart/totals/fee</item>
                                                             <item name="sortOrder" xsi:type="string">20</item>
                                                             <item name="config" xsi:type="array">

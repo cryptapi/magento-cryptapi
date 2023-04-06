@@ -34,7 +34,7 @@ class QuoteSubmitBefore implements ObserverInterface
 
         if ($paymentMethod === 'cryptapi') {
             $order =$observer->getOrder();
-            $order->setData('cryptapi_fee', (float)$quote->getData('fee'));
+            $order->setData('cryptapi_fee', (float)$quote->getData('cryptapi_fee'));
         }
 
     }

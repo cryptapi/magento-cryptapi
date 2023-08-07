@@ -25,7 +25,7 @@ The CryptAPI extension enables your Magento store to get receive payments in cry
 * (ETH) Ethereum
 * (BCH) Bitcoin Cash
 * (LTC) Litecoin
-* (XMR) Monero
+* (MATIC) Polygon
 * (TRX) Tron
 * (BNB) Binance Coin
 * (USDT) USDT
@@ -57,7 +57,7 @@ CryptAPI has no setup fees, no monthly fees, no hidden costs, and you don't even
 Simply set your crypto addresses and you're ready to go. As soon as your customers pay we forward your earnings directly to your own wallet.
 
 CryptAPI has a low 1% fee on the transactions processed. No hidden costs.
-For more info on our fees [click here](https://cryptapi.io/get_started/#fees)
+For more info on our fees [click here](https://cryptapi.io/fees/)
 
 ### Installation
 
@@ -98,17 +98,17 @@ This depends on the cryptocurrency you're using. Bitcoin usually takes up to 11 
 
 #### Is there a minimum for a payment?
 
-Yes, the minimums change according to the chosen cryptocurrency and can be checked [here](https://cryptapi.io/get_started/#fees).
+Yes, the minimums change according to the chosen cryptocurrency and can be checked [here](https://cryptapi.io/cryptocurrencies/).
 If the Magento order total is below the chosen cryptocurrency's minimum, an error is raised to the user.
 
 #### Where can I find more documentation on your service?
 
-You can find more documentation about our service on our [get started](https://cryptapi.io/get_started) page, our [technical documentation](https://cryptapi.io/docs/) page or our [resources](https://cryptapi.io/resources/) page.
+You can find more documentation about our service on our [get started](https://cryptapi.io/get-started) page, our [technical documentation](https://cryptapi.io/docs/) page or our [resources](https://cryptapi.io/resources/) page.
 If there's anything else you need that is not covered on those pages, please get in touch with us, we're here to help you!
 
 #### Where can I get support? 
 
-The easiest and fastest way is via our live chat on our [website](https://cryptapi.io) or via our [contact form](https://cryptapi.io/contact/).
+The easiest and fastest way is via our live chat on our [website](https://cryptapi.io) or via our [contact form](https://cryptapi.io/contacts/).
 
 ### Changelog 
 
@@ -155,6 +155,9 @@ The easiest and fastest way is via our live chat on our [website](https://crypta
 * Minor fixes
 
 #### 3.2.1
+* Minor bugfixes and improvements.
+
+#### 3.2.2
 * Minor bugfixes and improvements.
 
 ### Upgrade Notice

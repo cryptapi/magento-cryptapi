@@ -41,6 +41,10 @@ class Callback implements HttpGetActionInterface
 
         $metaData = json_decode($this->helper->getPaymentResponse($orderId), true);
 
+        if ($data['coin'] !== $metaData['cryptapi_currency']) {
+                return $this->response->setBody("*ok*");
+        }
+
         if ($this->payment->hasBeenPaid($order) || $data['nonce'] != $metaData['cryptapi_nonce']) {
             return $this->response->setBody("*ok*");
         }

@@ -160,5 +160,8 @@ The easiest and fastest way is via our live chat on our [website](https://crypta
 #### 3.2.2
 * Minor bugfixes and improvements.
 
+#### 3.2.3
+* Add new choices for order cancellation.
+
 ### Upgrade Notice
 * No breaking changes.

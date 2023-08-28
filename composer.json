@@ -2,7 +2,7 @@
     "name": "cryptapi/cryptapi",
     "description": "CryptAPI's Magento extension",
     "type": "magento2-module",
-    "version": "3.2.2",
+    "version": "3.2.3",
     "keywords": [
         "cryptapi",
         "magento2_module",

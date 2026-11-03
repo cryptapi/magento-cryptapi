@@ -38,11 +38,15 @@ class Payment extends Template
     public function getTemplateValues()
     {
         try {
-            if ($this->productMetadata->getVersion() >= 2.3 && $this->productMetadata->getVersion() < 2.4) {
+            // On 2.3 the block sits on the success page and the order comes from the buyer's own session.
+            $fromSession = $this->productMetadata->getVersion() >= 2.3 && $this->productMetadata->getVersion() < 2.4;
+
+            if ($fromSession) {
                 $order = $this->payment->getOrder();
             } else {
                 $order_id = (int)$this->request->getParam('order_id');
-                $nonce = (string)$this->request->getParam('nonce');
+                // Links emailed before the page token existed name it "nonce".
+                $token = (string)($this->request->getParam('token') ?: $this->request->getParam('nonce'));
                 $order = $this->orderRepository->get($order_id);
             }
 
@@ -50,7 +54,8 @@ class Payment extends Template
             $currencySymbol = $order->getOrderCurrencyCode();
             $metaData = $this->helper->getPaymentResponse($order->getQuoteId());
 
-            if (empty($metaData)) {
+            // A buyer who tried CryptAPI and then paid another way still has a row for the quote.
+            if (empty($metaData) || $order->getPayment()->getMethod() !== 'cryptapi') {
                 return false;
             }
 
@@ -60,7 +65,9 @@ class Payment extends Template
 
             $metaData = json_decode($metaData, true);
 
-            if ($nonce != $metaData['cryptapi_nonce']) {
+            $pageToken = $this->payment::getPageToken($metaData);
+
+            if (!$fromSession && !hash_equals($pageToken, $token)) {
                 return false;
             }
 
@@ -78,7 +85,7 @@ class Payment extends Template
 
                 $address = '';
 
-                $allCryptocurrencies = json_decode($this->scopeConfig->getValue('payment/cryptapi/supported_cryptocurrencies/cryptocurrencies', \Magento\Store\Model\ScopeInterface::SCOPE_STORE), true);
+                $allCryptocurrencies = json_decode((string)$this->scopeConfig->getValue('payment/cryptapi/supported_cryptocurrencies/cryptocurrencies', \Magento\Store\Model\ScopeInterface::SCOPE_STORE), true) ?: [];
 
                 foreach ($allCryptocurrencies as $uid => $data) {
                     if ($data['cryptocurrency'] === $selected) {
@@ -93,9 +100,7 @@ class Payment extends Template
 
                 $callbackUrl = $this->payment->getCallbackUrl();
 
-                $apiKey = $this->scopeConfig->getValue('payment/cryptapi/api_key', \Magento\Store\Model\ScopeInterface::SCOPE_STORE);
-
-                $api = new CryptAPIHelper($selected, $address, $apiKey, $callbackUrl, $params, true);
+                $api = new CryptAPIHelper($selected, $address, $callbackUrl, $params, true);
                 $addressIn = $api->get_address();
 
                 $qrCode = $api->get_qrcode('', $qrCodeSize);
@@ -104,7 +109,7 @@ class Payment extends Template
                 $this->helper->updatePaymentData($order->getQuoteId(), 'cryptapi_address', $addressIn);
                 $this->helper->updatePaymentData($order->getQuoteId(), 'cryptapi_qr_code_value', $qrCodeValue['qr_code']);
                 $this->helper->updatePaymentData($order->getQuoteId(), 'cryptapi_qr_code', $qrCode['qr_code']);
-                $this->helper->updatePaymentData($order->getQuoteId(), 'cryptapi_payment_url', $this->storeManager->getStore()->getUrl('cryptapi/index/payment/order_id/' . $order->getId() . '/nonce/' . $metaData['cryptapi_nonce']));
+                $this->helper->updatePaymentData($order->getQuoteId(), 'cryptapi_payment_url', $this->storeManager->getStore()->getUrl('cryptapi/index/payment/order_id/' . $order->getId() . '/token/' . $pageToken));
 
                 $metaData = json_decode($this->helper->getPaymentResponse($order->getQuoteId()), true);
                 $this->mail->sendMail($order, $metaData);
@@ -112,6 +117,7 @@ class Payment extends Template
 
             $ajaxParams = [
                 'order_id' => $order->getId(),
+                'token' => $pageToken,
             ];
 
             $ajaxUrl = $this->payment->getAjaxStatusUrl($ajaxParams);

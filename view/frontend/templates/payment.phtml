@@ -44,9 +44,9 @@
                             let waiting_network = jQuery('.waiting_network');
                             let payment_done = jQuery('.payment_done');
 
-                            jQuery('.ca_value').html(data.remaining);
+                            jQuery('.ca_value').text(data.remaining);
                             jQuery('.ca_copy.ca_details_copy').attr('data-tocopy', data.remaining);
-                            jQuery('.ca_fiat_total').html(data.fiat_remaining);
+                            jQuery('.ca_fiat_total').text(data.fiat_remaining);
 
                             if (data.cancelled === 1) {
                                 jQuery('.ca_loader').remove();
@@ -99,7 +99,7 @@
                             if (data.remaining !== data.crypto_total) {
                                 jQuery('.ca_notification_payment_received').show();
                                 jQuery('.ca_notification_cancel').remove();
-                                jQuery('.ca_notification_ammount').html(data.already_paid + ' ' + data.coin + ' (<strong>' + data.already_paid_fiat + '<strong>)');
+                                jQuery('.ca_notification_ammount').text(data.already_paid + ' ' + data.coin + ' (' + data.already_paid_fiat + ')');
                             }
 
                             if (data.order_history) {
@@ -115,11 +115,11 @@
                                         let date = new Date(value.timestamp * 1000).toLocaleDateString(document.documentElement.lang);
 
                                         jQuery('.ca_history_fill').append(
-                                            '<tr>' +
-                                            '<td>' + time + '<span class="ca_history_date">' + date + '</span></td>' +
-                                            '<td>' + value.value_paid + ' ' + data.coin + '</td>' +
-                                            '<td><strong>' + value.value_paid_fiat + ' ' + data.fiat_symbol + '</strong></td>' +
-                                            '</tr>'
+                                            jQuery('<tr>').append(
+                                                jQuery('<td>').text(time).append(jQuery('<span class="ca_history_date">').text(date)),
+                                                jQuery('<td>').text(value.value_paid + ' ' + data.coin),
+                                                jQuery('<td>').append(jQuery('<strong>').text(value.value_paid_fiat + ' ' + data.fiat_symbol))
+                                            )
                                         )
                                     });
                                 }
@@ -282,7 +282,7 @@
                                         if ($values['qr_code_setting'] == 'ammount') {
                                             echo 'style="display:none;"';
                                         }
-                                        ?> src="data:image/png;base64,<?php echo $values['qrcode']; ?>" alt="<?= __('QR Code without value'); ?>"/>
+                                        ?> src="data:image/png;base64,<?= $block->escapeHtmlAttr($values['qrcode']) ?>" alt="<?= __('QR Code without value'); ?>"/>
                                         <?php
                                     }
                                     if ($values['qr_code_setting'] != 'hide_without_ammount') {
@@ -291,7 +291,7 @@
                                         if ($values['qr_code_setting'] == 'without_ammount') {
                                             echo 'style="display:none;"';
                                         }
-                                        ?> src="data:image/png;base64,<?php echo $values['qrcode']; ?>"
+                                        ?> src="data:image/png;base64,<?= $block->escapeHtmlAttr($values['qrcode']) ?>"
                                              alt="<?= __('QR Code with value'); ?>"/>
                                         <?php
                                     }
@@ -333,7 +333,7 @@
                             ?>
                             <div class="inner-wrapper">
                                 <figure>
-                                    <img class="ca_qrcode no_value" src="data:image/png;base64,<?php echo $values['qrcode']; ?>"
+                                    <img class="ca_qrcode no_value" src="data:image/png;base64,<?= $block->escapeHtmlAttr($values['qrcode']) ?>"
                                          alt="<?= __('QR Code without value') ?>"/>
                                 </figure>
                                 <div class="ca_qrcode_buttons">
@@ -354,7 +354,7 @@
                             <span><b class="ca_value"><?= /* @noEscape */
                                     $values['crypto_value'] ?></b></span>
                                 <span><b><?= /* @noEscape */
-                                        strtoupper($values['crypto_coin']) ?></b></span>
+                                        $block->escapeHtml(strtoupper($values['crypto_coin'])) ?></b></span>
                                 <span class="ca_tooltip ca_copy_icon_tooltip tip"><?= __('COPY') ?></span>
                                 <span class="ca_tooltip ca_copy_icon_tooltip success" style="display: none"><?= __('COPIED') ?></span>
                             </button>
@@ -368,7 +368,7 @@
                         </div>
                         <div class="ca_payment_notification ca_notification_remaining" style="display: none">
                             <?= '<strong>' . __('Notice') . '</strong>: ' . sprintf(__('For technical reasons, the minimum amount for each transaction is %1s, so we adjusted the value by adding the remaining to it.'),
-                                (float)$values['min_tx'] . ' ' . strtoupper($values['crypto_coin']),
+                                (float)$values['min_tx'] . ' ' . $block->escapeHtml(strtoupper($values['crypto_coin'])),
                                 '<span class="ca_notification_remaining"></span>'
                             ); ?>
                         </div>
@@ -377,7 +377,7 @@
                             ?>
                             <div class="ca_time_refresh">
                                 <?= sprintf(__('The %1s conversion rate will be adjusted in %2s'),
-                                    strtoupper($values['crypto_coin']),
+                                    $block->escapeHtml(strtoupper($values['crypto_coin'])),
                                     '<span class="ca_time_seconds_count" data-seconds="' . $conversion_timer . '">' . date('i:s', $conversion_timer) . '</span>'
                                 );
                                 ?>
@@ -386,10 +386,8 @@
                         }
                         ?>
                         <div class="ca_details_input">
-                        <span><?= /* @noEscape */
-                            $values['address_in'] ?></span>
-                            <button class="ca_copy ca_copy_icon" data-tocopy="<?= /* @noEscape */
-                            $values['address_in'] ?>" style="background-image: url('<?php echo $block->getViewFileUrl("Cryptapi_Cryptapi/files/ca_copy_icon.svg") ?>')">
+                        <span><?= $block->escapeHtml($values['address_in']) ?></span>
+                            <button class="ca_copy ca_copy_icon" data-tocopy="<?= $block->escapeHtmlAttr($values['address_in']) ?>" style="background-image: url('<?php echo $block->getViewFileUrl("Cryptapi_Cryptapi/files/ca_copy_icon.svg") ?>')">
                                 <span class="ca_tooltip ca_copy_icon_tooltip tip"><?= __('COPY') ?></span>
                                 <span class="ca_tooltip ca_copy_icon_tooltip success" style="display: none"><?= __('COPIED') ?></span>
                             </button>
@@ -401,7 +399,7 @@
                         ?>
                         <span class="ca_notification_cancel" data-text="<?php echo __('Order will be cancelled in less than a minute.'); ?>">
                                     <?php echo sprintf(__('This order will be valid for %s'),
-                                        '<strong><span class="ca_cancel_timer" data-timestamp="' . $cancel_timer . '">' . date('H:i', $cancel_timer) . '</span></strong>',
+                                        '<strong><span class="ca_cancel_timer" data-timestamp="' . $cancel_timer . '">' . date('H:i', $cancel_timer) . '</span></strong>'
                                     ); ?>
                                 </span>
                         <?php

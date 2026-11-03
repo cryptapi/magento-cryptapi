@@ -20,6 +20,10 @@ class Fee extends AbstractTotal
      * @return $this
      */
     protected $quoteValidator = null;
+    protected $checkoutSession;
+    protected $scopeConfig;
+    protected $totals;
+    protected $logger;
 
     public function __construct(
         \Magento\Checkout\Model\Session          $checkoutSession,

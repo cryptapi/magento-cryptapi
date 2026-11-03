@@ -18,6 +18,12 @@ define(
             totals: quote.getTotals(),
             isTaxDisplayedInGrandTotal: window.checkoutConfig.includeTaxInGrandTotal || false,
 
+            isDisplayed: function () {
+                var method = quote.paymentMethod(),
+                    segment = totals.getSegment('cryptapi_fee');
+
+                return !!method && method.method === 'cryptapi' && !!segment && segment.value > 0;
+            },
             getValue: function () {
                 var price = 0;
                 if (this.totals()) {

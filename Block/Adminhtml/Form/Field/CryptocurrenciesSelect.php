@@ -45,7 +45,7 @@ class CryptocurrenciesSelect extends Select
     private function getSourceOptions(): array
     {
         $options = [];
-        foreach (CryptAPIHelper::get_supported_coins() as $ticker => $coin) {
+        foreach (CryptAPIHelper::get_supported_coins() ?: [] as $ticker => $coin) {
             $options[] = [
                 'value' => $ticker,
                 'label' => $coin

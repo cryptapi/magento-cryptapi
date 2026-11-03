@@ -60,10 +60,10 @@ class CryptapiPayment extends AbstractMethod
         \Magento\Framework\App\Config\ScopeConfigInterface      $scopeConfig,
         \Magento\Store\Model\StoreManagerInterface              $storeManager,
         \Magento\Payment\Model\Method\Logger                    $logger,
-        \Magento\Framework\Model\ResourceModel\AbstractResource $resource = null,
-        \Magento\Framework\Data\Collection\AbstractDb           $resourceCollection = null,
+        ?\Magento\Framework\Model\ResourceModel\AbstractResource $resource = null,
+        ?\Magento\Framework\Data\Collection\AbstractDb           $resourceCollection = null,
         array                                                   $data = [],
-        \Magento\Directory\Helper\Data                          $directory = null
+        ?\Magento\Directory\Helper\Data                          $directory = null
     )
     {
         $this->cryptapiHelper = $cryptapiHelper;
@@ -116,23 +116,45 @@ class CryptapiPayment extends AbstractMethod
 
     public function validate()
     {
-        $quote = $this->getQuote();
-
         $paymentInfo = $this->getInfoInstance();
 
         $selected = $paymentInfo->getAdditionalInformation('cryptapi_coin');
+
+        // Price the quote or order being paid, not the session's cart: a guest can
+        // place an order for another cart by its masked ID.
+        if ($paymentInfo instanceof \Magento\Sales\Model\Order\Payment) {
+            $order = $paymentInfo->getOrder();
+            $quoteId = $order->getQuoteId();
+            $total = $order->getGrandTotal();
+            $currencyCode = $order->getOrderCurrencyCode();
+
+            // The order is priced here, so it must not go through without a coin.
+            if (empty($selected)) {
+                throw new \Magento\Framework\Exception\LocalizedException(
+                    __('Please select a cryptocurrency.')
+                );
+            }
+        } else {
+            $quote = $paymentInfo->getQuote();
+            $quoteId = $quote->getId();
+            $total = $quote->getGrandTotal();
+            $currencyCode = $quote->getQuoteCurrencyCode();
+        }
 
         if (empty($selected)) {
             return $this;
         }
 
+        $enabled = json_decode((string)$this->getConfigValue('supported_cryptocurrencies/cryptocurrencies'), true) ?: [];
+
+        if (!in_array($selected, array_column($enabled, 'cryptocurrency'), true)) {
+            throw new \Magento\Framework\Exception\LocalizedException(
+                __('Please select a valid cryptocurrency.')
+            );
+        }
+
         $nonce = $this->generateNonce();
         $info = CryptAPIHelper::get_info($selected);
-        $minTx = floatval($info->minimum_transaction_coin);
-
-        $currencyCode = $quote->getQuoteCurrencyCode();
-
-        $total = $quote->getGrandTotal();
 
         $cryptoTotal = CryptAPIHelper::get_conversion(
             $currencyCode,
@@ -140,6 +162,14 @@ class CryptapiPayment extends AbstractMethod
             $total,
             $this->scopeConfig->getValue('payment/cryptapi/disable_conversion', \Magento\Store\Model\ScopeInterface::SCOPE_STORE)
         );
+
+        if (empty($info) || empty($cryptoTotal)) {
+            throw new \Magento\Framework\Exception\LocalizedException(
+                __('The payment service could not be reached. Please try again.')
+            );
+        }
+
+        $minTx = floatval($info->minimum_transaction_coin);
 
         if ($cryptoTotal < $minTx) {
             $message = 'Payment error: Value too low, minimum is';
@@ -151,6 +181,7 @@ class CryptapiPayment extends AbstractMethod
 
         $paymentData = [
             'cryptapi_nonce' => $nonce,
+            'cryptapi_page_token' => $this->generateNonce(),
             'cryptapi_address' => '',
             'cryptapi_total' => $cryptoTotal,
             'cryptapi_total_fiat' => $total,
@@ -166,7 +197,7 @@ class CryptapiPayment extends AbstractMethod
 
         $paymentData = json_encode($paymentData);
 
-        $this->cryptapiHelper->addPaymentResponse($quote->getId(), $paymentData);
+        $this->cryptapiHelper->addPaymentResponse($quoteId, $paymentData);
 
         return $this;
     }
@@ -205,6 +236,21 @@ class CryptapiPayment extends AbstractMethod
         }
     }
 
+    /*
+     * Token that lets the buyer open the payment page and poll its status.
+     * The callback nonce must never reach the buyer, so it is kept apart.
+     * Orders placed before the token existed fall back to the nonce, which
+     * their buyers already hold in the emailed link.
+     */
+    public static function getPageToken($meta)
+    {
+        if (!empty($meta['cryptapi_page_token'])) {
+            return (string)$meta['cryptapi_page_token'];
+        }
+
+        return (string)$meta['cryptapi_nonce'];
+    }
+
     public static function calcOrder($history, $meta)
     {
         $already_paid = 0;
@@ -216,14 +262,14 @@ class CryptapiPayment extends AbstractMethod
         if (!empty($history)) {
             foreach ($history as $uuid => $item) {
                 if ((int)$item['pending'] === 0) {
-                    $remaining = bcsub(CryptAPIHelper::sig_fig($remaining, 6), $item['value_paid'], 8);
+                    $remaining = bcsub(CryptAPIHelper::sig_fig($remaining, 6), CryptAPIHelper::to_decimal($item['value_paid']), 8);
                 }
 
-                $remaining_pending = bcsub(CryptAPIHelper::sig_fig($remaining_pending, 6), $item['value_paid'], 8);
-                $remaining_fiat = bcsub(CryptAPIHelper::sig_fig($remaining_fiat, 6), $item['value_paid_fiat'], 8);
+                $remaining_pending = bcsub(CryptAPIHelper::sig_fig($remaining_pending, 6), CryptAPIHelper::to_decimal($item['value_paid']), 8);
+                $remaining_fiat = bcsub(CryptAPIHelper::sig_fig($remaining_fiat, 6), CryptAPIHelper::to_decimal($item['value_paid_fiat']), 8);
 
-                $already_paid = bcadd(CryptAPIHelper::sig_fig($already_paid, 6), $item['value_paid'], 8);
-                $already_paid_fiat = bcadd(CryptAPIHelper::sig_fig($already_paid_fiat, 6), $item['value_paid_fiat'], 8);
+                $already_paid = bcadd(CryptAPIHelper::sig_fig($already_paid, 6), CryptAPIHelper::to_decimal($item['value_paid']), 8);
+                $already_paid_fiat = bcadd(CryptAPIHelper::sig_fig($already_paid_fiat, 6), CryptAPIHelper::to_decimal($item['value_paid_fiat']), 8);
             }
         }
 

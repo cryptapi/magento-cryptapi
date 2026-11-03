@@ -15,20 +15,6 @@ require([
 
         var linkUrl = url.build('cryptapi/index/cartquote');
 
-        var feeContainer = $('.cryptapi.totals.fee.excl');
-
-        feeContainer.hide();
-
-        setInterval(function () {
-            if ($('body').attr('aria-busy') === 'false') {
-                if (quote?.paymentMethod?._latestValue.method === 'cryptapi' && parseFloat($('.cryptapi.totals.fee.excl .price').html().replace(/\D/g, '')) > 0) {
-                    feeContainer.show();
-                } else {
-                    feeContainer.hide();
-                }
-            }
-        }, 1000);
-
         cryptoSelector.unbind('change');
         cryptoSelector.on('change', function () {
             $.getJSON(linkUrl + '?selected=' + cryptoSelector.val(), function (data) {

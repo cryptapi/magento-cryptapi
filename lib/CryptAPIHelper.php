@@ -5,20 +5,17 @@ namespace Cryptapi\Cryptapi\lib;
 class CryptAPIHelper
 {
     private static $base_url = "https://api.cryptapi.io";
-    private static $pro_url = "https://api.blockbee.io";
     private $own_address = null;
     private $payment_address = null;
     private $callback_url = null;
     private $coin = null;
     private $pending = false;
     private $parameters = [];
-    private $api_key = null;
 
-    public function __construct($coin, $own_address, $api_key, $callback_url, $parameters = [], $pending = false)
+    public function __construct($coin, $own_address, $callback_url, $parameters = [], $pending = false)
     {
         $this->own_address = $own_address;
         $this->callback_url = $callback_url;
-        $this->api_key = $api_key;
         $this->coin = $coin;
         $this->pending = $pending ? 1 : 0;
         $this->parameters = $parameters;
@@ -27,13 +24,7 @@ class CryptAPIHelper
     public function get_address()
     {
 
-        if (empty($this->coin) || empty($this->callback_url)) {
-            return null;
-        }
-
-        $api_key = $this->api_key;
-
-        if (empty($api_key) && empty($this->own_address)) {
+        if (empty($this->coin) || empty($this->callback_url) || empty($this->own_address)) {
             return null;
         }
 
@@ -43,30 +34,16 @@ class CryptAPIHelper
             $callback_url = "{$this->callback_url}?{$req_parameters}";
         }
 
-        if (!empty($api_key) && empty($this->own_address)) {
-            $ca_params = [
-                'apikey' => $api_key,
-                'callback' => $callback_url,
-                'pending' => $this->pending,
-            ];
-        } elseif (empty($api_key) && !empty($this->own_address)) {
-            $ca_params = [
-                'callback' => $callback_url,
-                'address' => $this->own_address,
-                'pending' => $this->pending,
-            ];
-        } elseif(!empty($api_key) && !empty($this->own_address)) {
-            $ca_params = [
-                'apikey' => $api_key,
-                'callback' => $callback_url,
-                'address' => $this->own_address,
-                'pending' => $this->pending,
-            ];
-        }
+        $ca_params = [
+            'callback' => $callback_url,
+            'address' => $this->own_address,
+            'pending' => $this->pending,
+            'post' => 1,
+        ];
 
         $response = CryptAPIHelper::_request($this->coin, 'create', $ca_params);
 
-        if ($response->status == 'success') {
+        if (isset($response->status) && $response->status == 'success') {
             $this->payment_address = $response->address_in;
 
             return $response->address_in;
@@ -86,7 +63,7 @@ class CryptAPIHelper
 
         $response = CryptAPIHelper::_request($this->coin, 'logs', $params);
 
-        if ($response->status == 'success') {
+        if (isset($response->status) && $response->status == 'success') {
             return $response;
         }
 
@@ -112,7 +89,7 @@ class CryptAPIHelper
 
         $response = CryptAPIHelper::_request($this->coin, 'qrcode', $params);
 
-        if ($response->status == 'success') {
+        if (isset($response->status) && $response->status == 'success') {
             return ['qr_code' => $response->qr_code, 'uri' => $response->payment_uri];
         }
 
@@ -140,7 +117,7 @@ class CryptAPIHelper
 
         $response = CryptAPIHelper::_request($coin, 'qrcode', $params);
 
-        if ($response->status == 'success') {
+        if (isset($response->status) && $response->status == 'success') {
             return ['qr_code' => $response->qr_code, 'uri' => $response->payment_uri];
         }
 
@@ -151,7 +128,7 @@ class CryptAPIHelper
     {
         $info = CryptAPIHelper::get_info(null, true);
 
-        if (empty($info)) {
+        if (empty($info) || !is_array($info)) {
             return null;
         }
 
@@ -160,6 +137,10 @@ class CryptAPIHelper
         $coins = [];
 
         foreach ($info as $chain => $data) {
+            if (!is_array($data)) {
+                continue;
+            }
+
             $is_base_coin = in_array('ticker', array_keys($data));
             if ($is_base_coin) {
                 $coins[$chain] = $data['coin'];
@@ -174,7 +155,7 @@ class CryptAPIHelper
             }
         }
 
-        return $coins;
+        return $coins ?: null;
     }
 
     public static function get_info($coin = null, $assoc = false)
@@ -187,8 +168,19 @@ class CryptAPIHelper
 
         $response = CryptAPIHelper::_request($coin, 'info', $params, $assoc);
 
-        if (empty($coin) || $response->status == 'success') {
+        if (empty($coin) || (isset($response->status) && $response->status == 'success')) {
             return $response;
+        }
+
+        return null;
+    }
+
+    public static function get_pubkey()
+    {
+        $response = CryptAPIHelper::_request(null, 'pubkey');
+
+        if (isset($response->status) && $response->status == 'success') {
+            return $response->pubkey;
         }
 
         return null;
@@ -196,17 +188,19 @@ class CryptAPIHelper
 
     public static function process_callback($_get)
     {
+        // Not every callback carries every field (pending ones have fewer), and
+        // Magento turns a missing array key into an exception.
         $params = [
-            'address_in' => $_get['address_in'],
-            'address_out' => $_get['address_out'],
-            'txid_in' => $_get['txid_in'],
+            'address_in' => isset($_get['address_in']) ? $_get['address_in'] : null,
+            'address_out' => isset($_get['address_out']) ? $_get['address_out'] : null,
+            'txid_in' => isset($_get['txid_in']) ? $_get['txid_in'] : null,
             'txid_out' => isset($_get['txid_out']) ? $_get['txid_out'] : null,
-            'confirmations' => $_get['confirmations'],
-            'value' => $_get['value'],
-            'value_coin' => $_get['value_coin'],
+            'confirmations' => isset($_get['confirmations']) ? $_get['confirmations'] : null,
+            'value' => isset($_get['value']) ? $_get['value'] : null,
+            'value_coin' => isset($_get['value_coin']) ? $_get['value_coin'] : null,
             'value_forwarded' => isset($_get['value_forwarded']) ? $_get['value_forwarded'] : null,
             'value_forwarded_coin' => isset($_get['value_forwarded_coin']) ? $_get['value_forwarded_coin'] : null,
-            'coin' => $_get['coin'],
+            'coin' => isset($_get['coin']) ? $_get['coin'] : null,
             'pending' => isset($_get['pending']) ? $_get['pending'] : false,
         ];
 
@@ -237,7 +231,7 @@ class CryptAPIHelper
 
         $response = CryptAPIHelper::_request('', 'convert', $params);
 
-        if ($response->status == 'success') {
+        if (isset($response->status) && $response->status == 'success') {
             return $response->value_coin;
         }
 
@@ -254,7 +248,7 @@ class CryptAPIHelper
 
         $response = CryptAPIHelper::_request($coin, 'estimate', $params);
 
-        if ($response->status == 'success') {
+        if (isset($response->status) && $response->status == 'success') {
             return $response->estimated_cost_currency;
         }
 
@@ -263,7 +257,7 @@ class CryptAPIHelper
 
     public static function sig_fig($value, $digits)
     {
-        $value = (string) $value;
+        $value = CryptAPIHelper::to_decimal($value);
         if (strpos($value, '.') !== false) {
             if ($value[0] != '-') {
                 return bcadd($value, '0.' . str_repeat('0', $digits) . '5', $digits);
@@ -275,14 +269,25 @@ class CryptAPIHelper
         return $value;
     }
 
+    /*
+     * PHP prints small floats in exponent form (0.00008 becomes "8.0E-5"),
+     * which bcmath rejects with an error.
+     */
+    public static function to_decimal($value)
+    {
+        $value = (string) $value;
+
+        if (stripos($value, 'e') !== false) {
+            return sprintf('%.18F', (float) $value);
+        }
+
+        return $value;
+    }
+
     private static function _request($coin, $endpoint, $params = [], $assoc = false)
     {
 
         $base_url = CryptAPIHelper::$base_url;
-
-        if (!empty($params['apikey']) && $endpoint !== 'info') {
-            $base_url = CryptAPIHelper::$pro_url;
-        }
 
         if (!empty($params)) {
             $data = http_build_query($params);
@@ -301,19 +306,17 @@ class CryptAPIHelper
 
         $curl = curl_init($url);
         curl_setopt($curl, CURLOPT_HEADER, 0);
-        curl_setopt($curl, CURLOPT_SSL_VERIFYHOST, 0);
-        curl_setopt($curl, CURLOPT_SSL_VERIFYPEER, 0);
+        curl_setopt($curl, CURLOPT_SSL_VERIFYHOST, 2);
+        curl_setopt($curl, CURLOPT_SSL_VERIFYPEER, 1);
         curl_setopt($curl, CURLOPT_RETURNTRANSFER, 1);
+        curl_setopt($curl, CURLOPT_TIMEOUT, 20);
 
         $response = curl_exec($curl);
 
-        $json = [];
-
-        if (curl_error($curl)) {
-            $json['error'] = 'ERROR: ' . curl_errno($curl) . '::' . curl_error($curl);
-            return $json;
-        } elseif ($response) {
-            return json_decode($response, $assoc);
+        if (curl_error($curl) || !$response) {
+            return null;
         }
+
+        return json_decode($response, $assoc);
     }
 }

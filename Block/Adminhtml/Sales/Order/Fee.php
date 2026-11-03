@@ -57,6 +57,12 @@ class Fee extends Template
         $parent = $this->getParentBlock();
         $this->order = $parent->getOrder();
         $this->source = $parent->getSource();
+
+        $payment = $this->order->getPayment();
+        if (!$payment || $payment->getMethod() !== 'cryptapi' || (float)$this->order->getData('cryptapi_fee') <= 0) {
+            return $this;
+        }
+
         $fee = new \Magento\Framework\DataObject(
             [
                 'code' => 'cryptapi_fee',

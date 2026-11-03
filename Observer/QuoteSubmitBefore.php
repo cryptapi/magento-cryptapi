@@ -10,6 +10,9 @@ class QuoteSubmitBefore implements ObserverInterface
 {
     protected $objectCopyService;
     protected $logger;
+    protected $orderResourceModel;
+    protected $orderRepository;
+    protected $payment;
 
     public function __construct(
         \Magento\Sales\Api\OrderRepositoryInterface $orderRepository,

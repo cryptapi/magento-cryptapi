@@ -8,6 +8,13 @@ use Cryptapi\Cryptapi\Helper\Mail;
 
 class AfterSuccess implements ObserverInterface
 {
+    protected $helper;
+    protected $payment;
+    protected $responseFactory;
+    protected $url;
+    protected $logger;
+    protected $productMetadata;
+    protected $redirect;
 
     public function __construct(
         \Cryptapi\Cryptapi\Helper\Data                  $helper,
@@ -48,7 +55,7 @@ class AfterSuccess implements ObserverInterface
 
             $params = [
                 'order_id' => $order->getId(),
-                'nonce' => $metaData['cryptapi_nonce']
+                'token' => $this->payment::getPageToken($metaData)
             ];
 
             $redirectOrder = $this->url->getUrl('cryptapi/index/payment', $params);

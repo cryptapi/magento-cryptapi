@@ -12,8 +12,8 @@ $values = $block->getResponseValues();
         <?php foreach ($values as $key => $val) { ?>
             <div class="admin__page-section-item-content" 
                 style="padding: 5px 0px; ">
-                <strong><?= /* @noEscape */ $key ?>:</strong>
-                <span class="price"><?= /* @noEscape */ $val ?></span>                        
+                <strong><?= $block->escapeHtml($key) ?>:</strong>
+                <span class="price"><?= $block->escapeHtml((string)$val) ?></span>
             </div>
         <?php }?>
         </div>

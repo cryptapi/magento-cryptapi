@@ -10,6 +10,12 @@ use Cryptapi\Cryptapi\Helper\Data;
 
 class CryptapiCronjob
 {
+    protected $scopeConfig;
+    protected $orderCollectionFactory;
+    protected $helper;
+    protected $orderRepository;
+    protected $payment;
+    protected $logger;
 
     public function __construct(
         ScopeConfigInterface                            $scopeConfig,
@@ -48,7 +54,12 @@ class CryptapiCronjob
         foreach ($orders as $order) {
             $orderQuoteId = $order->getQuoteId();
 
-            $metaData = json_decode($this->helper->getPaymentResponse($order->getQuoteId()), true);
+            $metaData = json_decode((string)$this->helper->getPaymentResponse($order->getQuoteId()), true);
+
+            // An order without payment data must not stop the run for every older order.
+            if (empty($metaData)) {
+                continue;
+            }
 
             $history = json_decode($metaData['cryptapi_history'], true);
 
@@ -62,23 +73,30 @@ class CryptapiCronjob
 
             if (!empty($metaData['cryptapi_address']) && $value_refresh !== 0 && $metaData['cryptapi_cancelled'] !== '1' && (int)$metaData['cryptapi_last_price_update'] + $value_refresh <= time() && $remaining_pending > 0) {
 
-                if ($remaining === $remaining_pending) {
-                    $cryptapi_coin = $metaData['cryptapi_currency'];
+                $cryptapi_coin = $metaData['cryptapi_currency'];
 
-                    $crypto_total = CryptAPIHelper::get_conversion($order->getOrderCurrencyCode(), $cryptapi_coin, $metaData['cryptapi_total_fiat'], $disable_conversion);
+                // Reprice only while nothing has been paid: repricing later would revalue
+                // crypto the buyer already sent. A failed conversion keeps the old price.
+                $crypto_total = $already_paid <= 0
+                    ? CryptAPIHelper::get_conversion($order->getOrderCurrencyCode(), $cryptapi_coin, $metaData['cryptapi_total_fiat'], $disable_conversion)
+                    : null;
+
+                if (!empty($crypto_total)) {
                     $this->helper->updatePaymentData($orderQuoteId, 'cryptapi_total', $crypto_total);
 
+                    $metaData['cryptapi_total'] = $crypto_total;
                     $calc_cron = $this->payment::calcOrder($history, $metaData);
                     $crypto_remaining_total = $calc_cron['remaining_pending'];
 
-                    if ($remaining_pending <= $min_tx && !$remaining_pending <= 0) {
+                    if ($crypto_remaining_total <= $min_tx) {
                         $qr_code_data_value = CryptAPIHelper::get_static_qrcode($metaData['cryptapi_address'], $cryptapi_coin, $min_tx, $this->scopeConfig->getValue('payment/cryptapi/qrcode_size'));
                     } else {
                         $qr_code_data_value = CryptAPIHelper::get_static_qrcode($metaData['cryptapi_address'], $cryptapi_coin, $crypto_remaining_total, $this->scopeConfig->getValue('payment/cryptapi/qrcode_size'));
                     }
 
-                    $this->helper->updatePaymentData($orderQuoteId, 'cryptapi_qr_code_value', $qr_code_data_value['qr_code']);
-
+                    if (!empty($qr_code_data_value)) {
+                        $this->helper->updatePaymentData($orderQuoteId, 'cryptapi_qr_code_value', $qr_code_data_value['qr_code']);
+                    }
                 }
 
                 $this->helper->updatePaymentData($orderQuoteId, 'cryptapi_last_price_update', time());

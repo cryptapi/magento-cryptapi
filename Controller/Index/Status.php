@@ -10,6 +10,13 @@ class Status implements HttpGetActionInterface
     protected $helper;
     protected $payment;
     protected $orderFactory;
+    protected $orderRepository;
+    protected $scopeConfig;
+    protected $cronjob;
+    protected $request;
+    protected $response;
+    protected $priceHelper;
+    protected $logger;
 
     public function __construct(
         \Cryptapi\Cryptapi\Helper\Data                     $helper,
@@ -37,12 +44,13 @@ class Status implements HttpGetActionInterface
     public function execute()
     {
         $orderId = (int)$this->request->getParam('order_id');
+        $token = (string)$this->request->getParam('token');
 
         $order = $this->orderRepository->get($orderId);
-        $metaData = $this->helper->getPaymentResponse($order->getQuoteId());
+        $metaData = json_decode((string)$this->helper->getPaymentResponse($order->getQuoteId()), true);
 
-        if (!empty($metaData)) {
-            $metaData = json_decode($metaData, true);
+        if (empty($metaData) || !hash_equals($this->payment::getPageToken($metaData), $token)) {
+            return $this->response->setHttpResponseCode(403)->setBody('');
         }
 
         $showMinFee = '0';
@@ -65,8 +73,12 @@ class Status implements HttpGetActionInterface
             $cryptapi_pending = '1';
         }
 
-        $counter_calc = (int)$metaData['cryptapi_last_price_update'] + (int)$this->scopeConfig->getValue('payment/cryptapi/refresh_value_interval', \Magento\Store\Model\ScopeInterface::SCOPE_STORE) - time();
-        if (!$this->payment->hasBeenPaid($order) && $counter_calc <= 0) {
+        $refresh_interval = (int)$this->scopeConfig->getValue('payment/cryptapi/refresh_value_interval', \Magento\Store\Model\ScopeInterface::SCOPE_STORE);
+        $counter_calc = (int)$metaData['cryptapi_last_price_update'] + $refresh_interval - time();
+
+        // Only run the cron when a price refresh is really due for this order, or every
+        // poll would run it over all pending orders.
+        if ($refresh_interval > 0 && $counter_calc <= 0 && !$this->payment->hasBeenPaid($order) && $metaData['cryptapi_cancelled'] !== '1') {
             $this->cronjob->execute();
         }
 
@@ -93,6 +105,6 @@ class Status implements HttpGetActionInterface
         ];
 
         $response = json_encode($data);
-        return $this->response->setBody($response);
+        return $this->response->setHeader('Content-Type', 'application/json', true)->setBody($response);
     }
 }

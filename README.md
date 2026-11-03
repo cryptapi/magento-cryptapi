@@ -163,5 +163,11 @@ The easiest and fastest way is via our live chat on our [website](https://crypta
 #### 3.2.3
 * Add new choices for order cancellation.
 
+#### 3.2.4
+* Security fixes.
+* Minor bugfixes and improvements.
+
 ### Upgrade Notice
-* No breaking changes.
+* After updating, run `php bin/magento setup:upgrade` and `php bin/magento setup:di:compile`, then flush the cache.
+* The server must reach api.cryptapi.io over HTTPS with a valid certificate.
+* Stores behind Fastly: check unpaid orders placed before the update by hand, as their callbacks may be refused.

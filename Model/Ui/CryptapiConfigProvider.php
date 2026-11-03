@@ -11,6 +11,12 @@ class CryptapiConfigProvider implements ConfigProviderInterface
 {
     const CODE = 'cryptapi';
 
+    protected $scopeConfig;
+    protected $paymentHelper;
+    protected $escaper;
+    protected $cache;
+    protected $serializer;
+
     public function __construct(
         \Magento\Framework\App\Config\ScopeConfigInterface $scopeConfig,
         PaymentHelper                                      $paymentHelper,
@@ -48,27 +54,33 @@ class CryptapiConfigProvider implements ConfigProviderInterface
         $cacheKey = \Cryptapi\Cryptapi\Model\Cache\Type::TYPE_IDENTIFIER;
         $cacheTag = \Cryptapi\Cryptapi\Model\Cache\Type::CACHE_TAG;
 
-        if (empty($this->cache->load($cacheKey)) || !$this->serializer->unserialize($this->cache->load($cacheKey))) {
+        $cached = $this->cache->load($cacheKey);
+        $available_cryptos = $cached ? $this->serializer->unserialize($cached) : null;
+
+        if (empty($available_cryptos) || !is_array($available_cryptos)) {
+            $available_cryptos = CryptAPIHelper::get_supported_coins();
+
+            // A failed lookup is not cached, or checkout would stay broken until the cache expires.
+            if (empty($available_cryptos)) {
+                return [];
+            }
+
             $this->cache->save(
-                $this->serializer->serialize($this->serializer->serialize(CryptAPIHelper::get_supported_coins())),
+                $this->serializer->serialize($available_cryptos),
                 $cacheKey,
                 [$cacheTag],
                 86400
             );
         }
 
-        $available_cryptos = $this->serializer->unserialize($this->cache->load($cacheKey));
-
-        $selected = json_decode($this->scopeConfig->getValue('payment/cryptapi/supported_cryptocurrencies/cryptocurrencies', \Magento\Store\Model\ScopeInterface::SCOPE_STORE), true);
-
-        $apiKey = $this->scopeConfig->getValue('payment/cryptapi/api_key', \Magento\Store\Model\ScopeInterface::SCOPE_STORE);
+        $selected = json_decode((string)$this->scopeConfig->getValue('payment/cryptapi/supported_cryptocurrencies/cryptocurrencies', \Magento\Store\Model\ScopeInterface::SCOPE_STORE), true);
 
         $output = [];
 
         if (!empty($selected)) {
-            foreach (json_decode($available_cryptos) as $ticker => $coin) {
+            foreach ($available_cryptos as $ticker => $coin) {
                 foreach ($selected as $uuid => $data) {
-                    if (!empty($data['cryptocurrency_address'] || !empty($apiKey))) { // Check for API Key / Address configuration. Prevents unexpected errors.
+                    if (!empty($data['cryptocurrency_address'])) { // Only coins with an address can be offered.
                         if ($ticker == $data['cryptocurrency'])
                             $output[] = [
                                 'value' => $data['cryptocurrency'],

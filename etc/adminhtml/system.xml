@@ -5,6 +5,14 @@
         <section id="payment">
             <group id="cryptapi" translate="label comment" type="text" sortOrder="310" showInDefault="1" showInWebsite="1" showInStore="1">
                 <label>Cryptapi</label>
+                <field id="domain_notice" sortOrder="0" showInDefault="1" showInWebsite="0" showInStore="0">
+                    <frontend_model>Cryptapi\Cryptapi\Block\Adminhtml\DomainNotice</frontend_model>
+                </field>
+                <field id="domain_verified" translate="label comment" type="select" sortOrder="0.5" showInDefault="1" showInWebsite="0" showInStore="0">
+                    <label>Domain verified</label>
+                    <comment>Set to Yes once you have verified your domain with CryptAPI, to hide the domain notice.</comment>
+                    <source_model>Magento\Config\Model\Config\Source\Yesno</source_model>
+                </field>
                 <field id="active" translate="label" type="select" sortOrder="1" showInDefault="1" showInWebsite="1" showInStore="1">
                     <label>Enabled</label>
                     <source_model>Magento\Config\Model\Config\Source\Yesno</source_model>

@@ -7,6 +7,7 @@
             <model>Cryptapi\Cryptapi\Model\Method\CryptapiPayment</model>
             <title>Pay With CryptAPI</title>
             <active>0</active>
+            <domain_verified>0</domain_verified>
             <show_branding>1</show_branding>
             <disable_conversion>0</disable_conversion>
             <qrcode_size>300</qrcode_size>

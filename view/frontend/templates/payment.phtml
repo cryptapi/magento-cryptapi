@@ -132,9 +132,10 @@
                                     timer.attr('data-seconds', data.counter);
                                 }
                             }
+                        }).always(function () {
+                            // Ask again only once this answer is in.
+                            setTimeout(status_loop, 5000);
                         });
-
-                        setTimeout(status_loop, 5000);
                     }
 
                     status_loop();

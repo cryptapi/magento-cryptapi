@@ -140,6 +140,40 @@ class Callback implements HttpGetActionInterface, HttpPostActionInterface, CsrfA
 
         $metaData = json_decode($this->helper->getPaymentResponse($orderId), true);
 
+        $confirmed = (int)$data['pending'] === 0 && !$order->isCanceled();
+
+        // Only trust a crypto total that loaded and was priced from this order's total.
+        // 3.2.3 and earlier could save a null total, which left paid orders waiting
+        // for good, so a confirmed payment prices the order once more.
+        if ($confirmed && !$this->payment::isPriced($metaData, $order)) {
+            $crypto_total = $this->payment->requoteOrder($order, $metaData, 10);
+
+            if ($crypto_total !== null) {
+                $this->helper->updatePaymentData($orderId, 'cryptapi_total', $crypto_total);
+                $this->helper->updatePaymentData($orderId, 'cryptapi_total_fiat', $order->getGrandTotal());
+                $this->helper->deletePaymentData($orderId, 'cryptapi_total_unavailable');
+                $metaData = json_decode($this->helper->getPaymentResponse($orderId), true);
+            }
+        }
+
+        if (!$this->payment::isPriced($metaData, $order)) {
+            // Keep the payment in the history and leave the order waiting. A confirmed
+            // callback gets a 503, so CryptAPI sends it again; by then the price may be back.
+            if (empty($metaData['cryptapi_total_unavailable'])) {
+                $this->helper->updatePaymentData($orderId, 'cryptapi_total_unavailable', '1');
+                $order->addCommentToStatusHistory(
+                    __('CryptAPI recorded payment %1, but the order has no valid crypto price yet, so it was not marked paid.', (string)$data['txid_in'])
+                );
+                $order->save();
+            }
+
+            if ($confirmed) {
+                return $this->response->setHttpResponseCode(503)->setBody('*retry*');
+            }
+
+            return $this->response->setBody("*ok*");
+        }
+
         $history = json_decode($metaData['cryptapi_history'], true);
 
         $calc = $this->payment::calcOrder($history, $metaData);
@@ -148,12 +182,8 @@ class Callback implements HttpGetActionInterface, HttpPostActionInterface, CsrfA
         $remaining_pending = $calc['remaining_pending'];
 
         if ($remaining_pending <= 0) {
-            // Only trust a crypto total that loaded and was priced from this order's total.
             // A cancelled order stays cancelled; the payment is in its history for the merchant.
-            $priced = (float)$metaData['cryptapi_total'] > 0
-                && abs((float)$metaData['cryptapi_total_fiat'] - (float)$order->getGrandTotal()) < 0.01;
-
-            if ($remaining <= 0 && $priced && !$order->isCanceled()) {
+            if ($remaining <= 0 && !$order->isCanceled()) {
                 $state = \Magento\Sales\Model\Order::STATE_PROCESSING;
                 $status = \Magento\Sales\Model\Order::STATE_PROCESSING;
                 $order->setState($state);

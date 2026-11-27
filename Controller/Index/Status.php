@@ -68,18 +68,19 @@ class Status implements HttpGetActionInterface
         $remaining_pending = $calc['remaining_pending'];
         $remaining_fiat = $calc['remaining_fiat'];
 
+        // With no valid total, remaining_pending is 0 before anyone pays.
         $cryptapi_pending = '0';
-        if ($remaining_pending <= 0 && !$this->payment->hasBeenPaid($order)) {
+        if ($remaining_pending <= 0 && !empty($history) && !$this->payment->hasBeenPaid($order)) {
             $cryptapi_pending = '1';
         }
 
         $refresh_interval = (int)$this->scopeConfig->getValue('payment/cryptapi/refresh_value_interval', \Magento\Store\Model\ScopeInterface::SCOPE_STORE);
         $counter_calc = (int)$metaData['cryptapi_last_price_update'] + $refresh_interval - time();
 
-        // Only run the cron when a price refresh is really due for this order, or every
-        // poll would run it over all pending orders.
+        // Refresh this order only, and only when it is due. The shopper is waiting,
+        // so each API call gets 10 s.
         if ($refresh_interval > 0 && $counter_calc <= 0 && !$this->payment->hasBeenPaid($order) && $metaData['cryptapi_cancelled'] !== '1') {
-            $this->cronjob->execute();
+            $this->cronjob->processOrder($order, 10);
         }
 
         if ($remaining_pending <= $min_tx && $remaining_pending > 0) {

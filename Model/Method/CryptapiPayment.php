@@ -237,6 +237,33 @@ class CryptapiPayment extends AbstractMethod
     }
 
     /*
+     * A stored crypto total counts only when it is a positive amount priced from
+     * this order's grand total.
+     */
+    public static function isPriced($meta, $order)
+    {
+        return CryptAPIHelper::positive_amount(isset($meta['cryptapi_total']) ? $meta['cryptapi_total'] : null) !== null
+            && abs((float)(isset($meta['cryptapi_total_fiat']) ? $meta['cryptapi_total_fiat'] : 0) - (float)$order->getGrandTotal()) < 0.01;
+    }
+
+    /*
+     * Prices the order's grand total in the order's own currency. Returns the
+     * coin amount, or null when the call fails.
+     */
+    public function requoteOrder($order, $meta, $timeout = 20)
+    {
+        $disableConversion = $this->_scopeConfig->getValue(
+            'payment/cryptapi/disable_conversion',
+            \Magento\Store\Model\ScopeInterface::SCOPE_STORE,
+            $order->getStoreId()
+        );
+
+        return CryptAPIHelper::positive_amount(
+            CryptAPIHelper::get_conversion($order->getOrderCurrencyCode(), $meta['cryptapi_currency'], $order->getGrandTotal(), $disableConversion, $timeout)
+        );
+    }
+
+    /*
      * Token that lets the buyer open the payment page and poll its status.
      * The callback nonce must never reach the buyer, so it is kept apart.
      * Orders placed before the token existed fall back to the nonce, which

@@ -96,7 +96,7 @@ class CryptAPIHelper
         return null;
     }
 
-    public static function get_static_qrcode($address, $coin, $value, $size = 300)
+    public static function get_static_qrcode($address, $coin, $value, $size = 300, $timeout = 20)
     {
         if (empty($address)) {
             return null;
@@ -105,7 +105,8 @@ class CryptAPIHelper
         if (!empty($value)) {
             $params = [
                 'address' => $address,
-                'value' => $value,
+                // A small float would go out as "8.0E-5".
+                'value' => is_float($value) ? number_format($value, 8, '.', '') : $value,
                 'size' => $size,
             ];
         } else {
@@ -115,7 +116,7 @@ class CryptAPIHelper
             ];
         }
 
-        $response = CryptAPIHelper::_request($coin, 'qrcode', $params);
+        $response = CryptAPIHelper::_request($coin, 'qrcode', $params, false, $timeout);
 
         if (isset($response->status) && $response->status == 'success') {
             return ['qr_code' => $response->qr_code, 'uri' => $response->payment_uri];
@@ -216,7 +217,7 @@ class CryptAPIHelper
         return $params;
     }
 
-    public static function get_conversion($from, $to, $value, $disable_conversion)
+    public static function get_conversion($from, $to, $value, $disable_conversion, $timeout = 20)
     {
 
         if ($disable_conversion) {
@@ -229,7 +230,7 @@ class CryptAPIHelper
             'value' => $value,
         ];
 
-        $response = CryptAPIHelper::_request('', 'convert', $params);
+        $response = CryptAPIHelper::_request('', 'convert', $params, false, $timeout);
 
         if (isset($response->status) && $response->status == 'success') {
             return $response->value_coin;
@@ -284,7 +285,31 @@ class CryptAPIHelper
         return $value;
     }
 
-    private static function _request($coin, $endpoint, $params = [], $assoc = false)
+    /*
+     * A positive decimal string, or null. A failed API call returns null, and
+     * 3.2.3 and earlier saved that as the order's total, so every stored total
+     * goes through this before it is trusted.
+     */
+    public static function positive_amount($value, $digits = 8)
+    {
+        if (is_int($value) || is_float($value)) {
+            $value = number_format($value, $digits, '.', '');
+        }
+
+        if (!is_string($value)) {
+            return null;
+        }
+
+        $value = CryptAPIHelper::to_decimal(trim($value));
+
+        if (!preg_match('/\A[0-9]+(\.[0-9]+)?\z/', $value)) {
+            return null;
+        }
+
+        return bccomp($value, '0', $digits) > 0 ? $value : null;
+    }
+
+    private static function _request($coin, $endpoint, $params = [], $assoc = false, $timeout = 20)
     {
 
         $base_url = CryptAPIHelper::$base_url;
@@ -309,7 +334,7 @@ class CryptAPIHelper
         curl_setopt($curl, CURLOPT_SSL_VERIFYHOST, 2);
         curl_setopt($curl, CURLOPT_SSL_VERIFYPEER, 1);
         curl_setopt($curl, CURLOPT_RETURNTRANSFER, 1);
-        curl_setopt($curl, CURLOPT_TIMEOUT, 20);
+        curl_setopt($curl, CURLOPT_TIMEOUT, $timeout);
 
         $response = curl_exec($curl);
 
